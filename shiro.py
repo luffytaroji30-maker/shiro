@@ -57,7 +57,7 @@ except ImportError:
 # Ensure gg can be imported
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# ── Shared asyncio event loop (runs in a daemon thread) ─────────────────────
+# â”€â”€ Shared asyncio event loop (runs in a daemon thread) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Use uvloop on Linux for 2-4x faster async I/O (not available on Windows)
 try:
     import uvloop
@@ -83,7 +83,7 @@ except ImportError:
 
 DEBUG = os.environ.get("DEBUG", "true").lower() in ("1", "true", "yes")
 
-# ── Clean, Professional Debug Logger ────────────────────────────────────────
+# â”€â”€ Clean, Professional Debug Logger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class ShiroLogger:
     """Clean, compact, professional logging system"""
     
@@ -111,23 +111,23 @@ class ShiroLogger:
         return f"[{ts}] [{level}] {category}: {message}"
     
     def success(self, category, message):
-        """✅ Success messages"""
-        print(self._format('✓', category, message, 'GREEN'))
+        """âœ… Success messages"""
+        print(self._format('âœ“', category, message, 'GREEN'))
     
     def info(self, category, message):
-        """ℹ️ Info messages"""
+        """â„¹ï¸ Info messages"""
         print(self._format('i', category, message, 'BLUE'))
     
     def warning(self, category, message):
-        """⚠️ Warning messages"""
+        """âš ï¸ Warning messages"""
         print(self._format('!', category, message, 'YELLOW'))
     
     def error(self, category, message):
-        """❌ Error messages"""
-        print(self._format('✗', category, message, 'RED'))
+        """âŒ Error messages"""
+        print(self._format('âœ—', category, message, 'RED'))
     
     def debug(self, category, message):
-        """🔍 Debug messages (only if debug enabled)"""
+        """ðŸ” Debug messages (only if debug enabled)"""
         if self.debug_enabled:
             print(self._format('D', category, message, 'CYAN'))
     
@@ -142,7 +142,7 @@ class ShiroLogger:
 
 log = ShiroLogger(debug=DEBUG)
 
-# ── Card Validation Utilities ───────────────────────────────────────────────
+# â”€â”€ Card Validation Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _luhn_check(card_number):
     """Validate card number using Luhn algorithm. Returns True if valid."""
     digits = [int(d) for d in str(card_number) if d.isdigit()]
@@ -201,7 +201,7 @@ except ImportError:
     pass
 bot = telebot.TeleBot(BOT_TOKEN, threaded=True, num_threads=16)
 
-# ── Global crash handler decorator ────────────────────────────────────────────
+# â”€â”€ Global crash handler decorator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _crash_safe(func):
     """Decorator: wraps handler so unhandled exceptions log + reply error instead of crashing the bot."""
     @functools.wraps(func)
@@ -216,14 +216,14 @@ def _crash_safe(func):
             try:
                 msg = args[0] if args else None
                 if msg and hasattr(msg, 'chat'):
-                    bot.reply_to(msg, "⚠️ An internal error occurred. Please try again.", parse_mode="HTML")
+                    bot.reply_to(msg, "âš ï¸ An internal error occurred. Please try again.", parse_mode="HTML")
                 elif msg and hasattr(msg, 'message'):  # callback_query
-                    bot.answer_callback_query(msg.id, "⚠️ Internal error. Try again.", show_alert=True)
+                    bot.answer_callback_query(msg.id, "âš ï¸ Internal error. Try again.", show_alert=True)
             except Exception:
                 pass  # don't crash the crash handler
     return wrapper
 
-# ── Bot-level exception handler ─────────────────────────────────────────────
+# â”€â”€ Bot-level exception handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _BotExceptionHandler(telebot.ExceptionHandler):
     def handle(self, exception):
         log.error('Bot', f'{type(exception).__name__}: {exception}')
@@ -231,17 +231,17 @@ class _BotExceptionHandler(telebot.ExceptionHandler):
         return True  # True = exception handled, don't re-raise
 
 bot.exception_handler = _BotExceptionHandler()
-# Owner-only commands (/resetdb, /cleardb). Set SHIRO_OWNER_ID to your Telegram user ID.
-OWNER_ID = os.environ.get("SHIRO_OWNER_ID", "").strip()
-if OWNER_ID:
-    try:
-        OWNER_ID = int(OWNER_ID)
-    except ValueError:
-        OWNER_ID = None
-else:
-    OWNER_ID = None
+# Owner-only commands (/resetdb, /cleardb). Set SHIRO_OWNER_ID to your Telegram user ID(s), comma-separated.
+_raw_owners = os.environ.get("SHIRO_OWNER_ID", "").strip()
+OWNER_IDS = set()
+for _tok in _raw_owners.replace(" ", "").split(","):
+    if _tok:
+        try:
+            OWNER_IDS.add(int(_tok))
+        except ValueError:
+            pass
 
-# ── Updating / Maintenance mode ─────────────────────────────────────────────
+# â”€â”€ Updating / Maintenance mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 UPDATING_MODE = False
 
 # Test cards used to validate sites when adding (only working sites are saved)
@@ -294,11 +294,11 @@ DISCORD_WEBHOOK_HITS = os.environ.get("DISCORD_WEBHOOK_HITS", "").strip()  # leg
 # Add the bot to a private group, then set the group chat ID here (e.g., -1001234567890)
 SHIRO_HITS_CHAT = os.environ.get("SHIRO_HITS_CHAT", "").strip()
 
-# ── Persistent aiohttp session for Discord webhooks (declare before use) ────
+# â”€â”€ Persistent aiohttp session for Discord webhooks (declare before use) â”€â”€â”€â”€
 _aio_session = None
 _aio_session_lock = threading.Lock()
 
-# ── Live Console Mirror to Discord ──────────────────────────────────────────
+# â”€â”€ Live Console Mirror to Discord â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Intercepts ALL print() / stdout / stderr output and sends it to the Discord
 # console webhook in real-time, batching lines every 2 seconds to avoid rate-limits.
 class _DiscordConsoleMirror:
@@ -314,7 +314,7 @@ class _DiscordConsoleMirror:
         self._timer = None
         self._started = False
 
-    # — file-like interface so it can replace sys.stdout —
+    # â€” file-like interface so it can replace sys.stdout â€”
     def write(self, text):
         if self._original:
             self._original.write(text)
@@ -342,7 +342,7 @@ class _DiscordConsoleMirror:
             return self._original.fileno()
         raise OSError("no underlying fileno")
 
-    # — batched Discord posting —
+    # â€” batched Discord posting â€”
     def _schedule_flush(self):
         self._timer = threading.Timer(self._FLUSH_INTERVAL, self._flush_to_discord)
         self._timer.daemon = True
@@ -377,7 +377,7 @@ class _DiscordConsoleMirror:
         self._schedule_flush()
 
     def _post(self, content):
-        """Post to Discord — uses aiohttp if available, falls back to httpx."""
+        """Post to Discord â€” uses aiohttp if available, falls back to httpx."""
         try:
             if _aio_session is not None and not _aio_session.closed:
                 _aio_post_sync(self._webhook, {"content": content})
@@ -393,7 +393,7 @@ if DISCORD_WEBHOOK_CONSOLE:
     sys.stdout = _stdout_mirror
     sys.stderr = _stderr_mirror
 
-# MongoDB – from .env or SHIRO_MONGO_URI env var
+# MongoDB â€“ from .env or SHIRO_MONGO_URI env var
 MONGO_URI = os.environ.get("SHIRO_MONGO_URI")
 if not MONGO_URI:
     log.warning('Config', 'SHIRO_MONGO_URI not set - MongoDB features disabled')
@@ -406,7 +406,7 @@ INITIAL_CREDITS = 100
 CREDITS_PER_CHECK = 1
 MASS_MAX_CARDS = 200
 
-# ── Plan definitions ─────────────────────────────────────────────────────────
+# â”€â”€ Plan definitions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 PLANS = {
     "basic": {"name": "Basic", "price": "$5/week", "days": 7, "credits": -1},    # -1 = unlimited
     "pro":   {"name": "Pro",   "price": "$15/month", "days": 30, "credits": -1},
@@ -564,7 +564,7 @@ def redeem_credit_code(user_id, code):
                 dur_min = code_doc.get("days", 30) * 24 * 60
             if _set_user_plan(user_id, plan_key, minutes=dur_min):
                 if DEBUG:
-                    print(f"[Mongo] ✅ User {user_id} activated {plan_key} plan for {dur_min} minutes")
+                    print(f"[Mongo] âœ… User {user_id} activated {plan_key} plan for {dur_min} minutes")
                 return True, f"plan:{plan_key}:{dur_min}", 0
             else:
                 # Roll back code claim
@@ -593,13 +593,13 @@ def redeem_credit_code(user_id, code):
 
         if DEBUG:
             new_balance = get_credits(user_id)
-            print(f"[Mongo] ✅ User {user_id} redeemed code {code} for {credits} credits, new balance: {new_balance}")
+            print(f"[Mongo] âœ… User {user_id} redeemed code {code} for {credits} credits, new balance: {new_balance}")
 
         return True, f"Redeemed {credits} credits", credits
 
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Redeem error for user {user_id}: {e}")
+            print(f"[Mongo] âŒ Redeem error for user {user_id}: {e}")
         return False, "Database error", 0
 
 
@@ -623,7 +623,7 @@ def _esc(text):
 @functools.lru_cache(maxsize=256)
 def _to_bold_sans(text):
     """Convert text to bold sans-serif Unicode characters (fast str.translate, HTML-aware).
-    Cached — most calls use identical constant strings."""
+    Cached â€” most calls use identical constant strings."""
     if not text:
         return text
     # Fast path: if no HTML tags, use str.translate directly
@@ -673,7 +673,7 @@ def _to_bold_sans(text):
 # Pre-built translation table (module level, created once)
 _BOLD_SANS_TABLE = str.maketrans(
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
-    '𝗔𝗕𝗖𝗗𝗘𝗙𝗚𝗛𝗜𝗝𝗞𝗟𝗠𝗡𝗢𝗣𝗤𝗥𝗦𝗧𝗨𝗩𝗪𝗫𝗬𝗭𝗮𝗯𝗰𝗱𝗲𝗳𝗴𝗵𝗶𝗷𝗸𝗹𝗺𝗻𝗼𝗽𝗾𝗿𝘀𝘁𝘂𝘃𝘄𝘅𝘆𝘇𝟬𝟭𝟮𝟯𝟰𝟱𝟲𝟳𝟴𝟵'
+    'ð—”ð—•ð—–ð——ð—˜ð—™ð—šð—›ð—œð—ð—žð—Ÿð— ð—¡ð—¢ð—£ð—¤ð—¥ð—¦ð—§ð—¨ð—©ð—ªð—«ð—¬ð—­ð—®ð—¯ð—°ð—±ð—²ð—³ð—´ð—µð—¶ð—·ð—¸ð—¹ð—ºð—»ð—¼ð—½ð—¾ð—¿ð˜€ð˜ð˜‚ð˜ƒð˜„ð˜…ð˜†ð˜‡ðŸ¬ðŸ­ðŸ®ðŸ¯ðŸ°ðŸ±ðŸ²ðŸ³ðŸ´ðŸµ'
 )
 
 
@@ -788,13 +788,13 @@ def register_user(user_id, username=None, first_name=None):
             _invalidate_user_cache(user_id)
         if DEBUG:
             if newly_created:
-                print(f"[Mongo] ✅ Registered user {user_id} ({username or first_name or '?'}) with {INITIAL_CREDITS} credits")
+                print(f"[Mongo] âœ… Registered user {user_id} ({username or first_name or '?'}) with {INITIAL_CREDITS} credits")
             else:
                 print(f"[Mongo] User {user_id} already registered")
         return newly_created
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Register error for {user_id}: {e}")
+            print(f"[Mongo] âŒ Register error for {user_id}: {e}")
             import traceback
             traceback.print_exc()
         return False
@@ -810,7 +810,7 @@ def update_user_activity(user_id, username=None, first_name=None):
     now = time.time()
     last = _user_activity_last.get(user_id, 0)
     if now - last < _USER_ACTIVITY_INTERVAL:
-        return  # skip — updated recently
+        return  # skip â€” updated recently
     _user_activity_last[user_id] = now
     # Prevent unbounded growth
     if len(_user_activity_last) > _USER_ACTIVITY_MAX_SIZE:
@@ -851,11 +851,11 @@ def deduct_credits(user_id, amount):
             _invalidate_user_cache(user_id)
             if DEBUG:
                 new_balance = r.get("credits", 0)
-                print(f"[Mongo] ✅ Deducted {amount} credits from user {user_id}, new balance: {new_balance}")
+                print(f"[Mongo] âœ… Deducted {amount} credits from user {user_id}, new balance: {new_balance}")
         return r is not None
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Deduct error for {user_id}: {e}")
+            print(f"[Mongo] âŒ Deduct error for {user_id}: {e}")
         return False
 
 
@@ -923,11 +923,11 @@ def increment_total_checks(user_id, count=1):
         )
         _invalidate_user_cache(user_id)
         if DEBUG:
-            print(f"[Mongo] ✅ Incremented checks for user {user_id} by {count}")
+            print(f"[Mongo] âœ… Incremented checks for user {user_id} by {count}")
         return True
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Increment error for {user_id}: {e}")
+            print(f"[Mongo] âŒ Increment error for {user_id}: {e}")
         return False
 
 
@@ -944,11 +944,11 @@ def increment_total_hits(user_id, count=1):
         )
         _invalidate_user_cache(user_id)
         if DEBUG:
-            print(f"[Mongo] ✅ Incremented hits for user {user_id} by {count}")
+            print(f"[Mongo] âœ… Incremented hits for user {user_id} by {count}")
         return True
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Hits increment error for {user_id}: {e}")
+            print(f"[Mongo] âŒ Hits increment error for {user_id}: {e}")
         return False
 
 def _load_chat_from_mongo(chat_id):
@@ -985,10 +985,10 @@ def _save_chat_to_mongo(chat_id):
         if DEBUG:
             sites_count = len(user_sites.get(chat_id, []))
             proxies_count = len(user_proxies.get(chat_id, []))
-            print(f"[Mongo] ✅ Saved chat {chat_id}: {sites_count} sites, {proxies_count} proxies")
+            print(f"[Mongo] âœ… Saved chat {chat_id}: {sites_count} sites, {proxies_count} proxies")
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Save error for {chat_id}: {e}")
+            print(f"[Mongo] âŒ Save error for {chat_id}: {e}")
 
 def _load_all_chats_from_mongo():
     """On startup: load all chats from MongoDB into user_sites / user_proxies."""
@@ -1178,14 +1178,14 @@ bt_user_sites = {}   # Braintree WooCommerce sites
 pending_sites = {}   # {cid: timestamp}
 pending_proxies = {} # {cid: timestamp}
 pending_msh = {}     # {cid: timestamp}
-pending_mbt = {}     # {cid: timestamp}  – mass Braintree check
-pending_mst = {}     # {cid: timestamp}  – mass Stripe Charge check
-pending_bt_sites = {} # {cid: timestamp} – waiting for BT site URLs
-pending_ac_link = {} # {cid: timestamp}  – waiting for Stripe Checkout URL
+pending_mbt = {}     # {cid: timestamp}  â€“ mass Braintree check
+pending_mst = {}     # {cid: timestamp}  â€“ mass Stripe Charge check
+pending_bt_sites = {} # {cid: timestamp} â€“ waiting for BT site URLs
+pending_ac_link = {} # {cid: timestamp}  â€“ waiting for Stripe Checkout URL
 pending_ac_cards = {} # {cid: {pk, client_secret, pi_id, mode, amount, currency, product, ts}}
-_stop_flags = {}     # {cid: True} – set by /stop to abort running checks
+_stop_flags = {}     # {cid: True} â€“ set by /stop to abort running checks
 
-# ── Background thread pool for non-critical I/O (webhooks, notifications) ──
+# â”€â”€ Background thread pool for non-critical I/O (webhooks, notifications) â”€â”€
 _bg_pool = ThreadPoolExecutor(max_workers=8, thread_name_prefix="bg")
 
 def _bg_fire(fn, *args, **kwargs):
@@ -1195,7 +1195,7 @@ def _bg_fire(fn, *args, **kwargs):
     except Exception:
         pass
 
-# ── Persistent aiohttp session functions (connection pooling) ────
+# â”€â”€ Persistent aiohttp session functions (connection pooling) â”€â”€â”€â”€
 # Note: _aio_session and _aio_session_lock declared earlier before _DiscordConsoleMirror
 
 def _get_aio_session():
@@ -1225,7 +1225,7 @@ async def _aio_post_json(url, data):
         async with session.post(url, json=data) as resp:
             return resp.status
     except Exception as e:
-        print(f"[aiohttp] ⚠️ POST failed: {e}")
+        print(f"[aiohttp] âš ï¸ POST failed: {e}")
         return None
 
 def _aio_post_sync(url, data):
@@ -1235,9 +1235,9 @@ def _aio_post_sync(url, data):
         fut.result(timeout=12)
     except Exception:
         pass
-_PENDING_TTL = 180   # seconds – auto-expire pending states after 3 min
+_PENDING_TTL = 180   # seconds â€“ auto-expire pending states after 3 min
 
-# ── Active mass check tracking (for dynamic worker scaling) ────────────
+# â”€â”€ Active mass check tracking (for dynamic worker scaling) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _active_mass_checks = 0   # how many /msh are currently running
 _mass_check_stop_flag = False  # global flag to stop all checks
 _mass_count_lock = threading.Lock()
@@ -1255,12 +1255,12 @@ def _get_mass_workers(total_cards, num_sites=1):
         base = min(8, total_cards)    # 4-5 concurrent: moderate
     else:
         base = min(5, total_cards)    # 6+: conservative
-    # Cap by site count — prevent hammering a single site with too many workers
+    # Cap by site count â€” prevent hammering a single site with too many workers
     # 1 site = max 8 workers, 2 sites = max 12, 3+ = max 15
     site_cap = min(15, max(8, num_sites * 6))
     return min(base, site_cap)
 
-# ── Proxy health tracking ──────────────────────────────────────────────────
+# â”€â”€ Proxy health tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _proxy_fails = {}   # {proxy_url: fail_count}
 _proxy_captcha = {} # {proxy_url: last_captcha_ts}
 _proxy_success = {} # {proxy_url: success_count} - NEW
@@ -1280,7 +1280,7 @@ def _pick_proxy(proxies):
             and now - _proxy_captcha.get(p, 0) > _PROXY_CAPTCHA_COOLDOWN
         ]
         if not healthy:
-            # All proxies exhausted — reset counters and use any
+            # All proxies exhausted â€” reset counters and use any
             _proxy_fails.clear()
             _proxy_captcha.clear()
             _proxy_success.clear()
@@ -1320,7 +1320,7 @@ def _record_proxy_result(proxy_url, result):
         elif (result or {}).get("status") == "Error":
             _proxy_fails[proxy_url] = _proxy_fails.get(proxy_url, 0) + 1
         else:
-            # Good result — increment success counter and reset fail counter
+            # Good result â€” increment success counter and reset fail counter
             _proxy_success[proxy_url] = _proxy_success.get(proxy_url, 0) + 1
             _proxy_fails.pop(proxy_url, None)
         # Auto-remove proxy after 10 consecutive failures
@@ -1332,7 +1332,7 @@ def _record_proxy_result(proxy_url, result):
             log.warning('Proxy', f'Auto-removed dead proxy: {proxy_url[:30]}...')
             _proxy_fails.pop(proxy_url, None)
 
-# ── Site health tracking ────────────────────────────────────────────────────
+# â”€â”€ Site health tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _site_fails = {}    # {site_url: fail_count}
 _site_captcha = {}  # {site_url: captcha_count}
 _site_success = {}  # {site_url: success_count}
@@ -1415,7 +1415,7 @@ def _record_site_result(site_url, result):
             _site_success[site_url] = _site_success.get(site_url, 0) + 1
             _site_fails.pop(site_url, None)
 
-# ── Advanced rate limiting ──────────────────────────────────────────────────
+# â”€â”€ Advanced rate limiting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _site_rate_limit = {}  # {site_url: {"last_check": timestamp, "checks_in_window": count}}
 _RATE_LIMIT_WINDOW = 60  # 1 minute window
 _RATE_LIMIT_MAX_CHECKS = 20  # Max checks per site per minute
@@ -1461,7 +1461,7 @@ def _check_rate_limit(site_url):
         
         return 0
 
-# ── Round-robin site rotation ──────────────────────────────────────────────
+# â”€â”€ Round-robin site rotation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Ensures each consecutive CC check uses a different site instead of hammering
 # the same one.  Thread-safe via itertools.count (atomic on CPython).
 import itertools as _itertools
@@ -1475,10 +1475,10 @@ def _pick_site_rr(sites):
     return sites[idx]
 
 
-# ── Sticky proxy selection ─────────────────────────────────────────────────
+# â”€â”€ Sticky proxy selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 # Prefer the last-used healthy proxy (no CAPTCHA) to avoid unnecessary rotation.
 # If the current proxy gets CAPTCHA'd or fails, switch to the next healthy one.
-_sticky_proxy = {}  # {thread_id: proxy_url}  – per-worker sticky tracking
+_sticky_proxy = {}  # {thread_id: proxy_url}  â€“ per-worker sticky tracking
 
 def _pick_proxy_sticky(proxies, force_new=False):
     """Pick a proxy: re-use the current one if healthy, otherwise rotate.
@@ -1493,15 +1493,15 @@ def _pick_proxy_sticky(proxies, force_new=False):
             fails = _proxy_fails.get(current, 0)
             captcha_ts = _proxy_captcha.get(current, 0)
             if fails < _PROXY_MAX_FAILS and now - captcha_ts > _PROXY_CAPTCHA_COOLDOWN:
-                return current  # still healthy — keep using it
-    # Current proxy is bad or we have none — pick a new healthy one
+                return current  # still healthy â€” keep using it
+    # Current proxy is bad or we have none â€” pick a new healthy one
     new_proxy = _pick_proxy(proxies)
     with _proxy_lock:
         _sticky_proxy[tid] = new_proxy
     return new_proxy
 
 
-# ── Anti-duplicate card check (5 min window) ──────────────────────────────
+# â”€â”€ Anti-duplicate card check (5 min window) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _recent_checks = {}  # {card_str: timestamp}
 _DEDUP_TTL = 300     # 5 minutes
 
@@ -1535,7 +1535,7 @@ def _clean_pending():
     stale_ac = [k for k, v in pending_ac_cards.items() if isinstance(v, dict) and now - v.get("ts", 0) > _PENDING_TTL]
     for k in stale_ac:
         pending_ac_cards.pop(k, None)
-    # Note: stop flags are NOT cleaned here — they are managed by the
+    # Note: stop flags are NOT cleaned here â€” they are managed by the
     # mass-check lifecycle (set by /stop, cleared by _run_mass_check_inner).
     # Prune proxy health dicts to avoid unbounded growth
     with _proxy_lock:
@@ -1544,7 +1544,7 @@ def _clean_pending():
         if len(_proxy_captcha) > 500:
             _proxy_captcha.clear()
 
-# ── BIN Lookup with caching ────────────────────────────────────────────────
+# â”€â”€ BIN Lookup with caching â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 _bin_cache = {}  # {bin_prefix: (data, expires_at)}
 _BIN_CACHE_TTL = 86400  # 24 hours
 
@@ -1623,7 +1623,7 @@ def _lookup_bin(card_number):
         _bin_cache[bin_prefix] = (None, now + 300)
     return result
 
-# ── Check History Logging ──────────────────────────────────────────────────
+# â”€â”€ Check History Logging â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _log_check_result(user_id, card_last4, gateway, status, message, site_url=None):
     """Log check result to MongoDB for history."""
     db, _ = _get_mongo()
@@ -1643,7 +1643,7 @@ def _log_check_result(user_id, card_last4, gateway, status, message, site_url=No
     except Exception:
         pass  # Don't crash for logging
 
-# ── Periodic Cleanup Thread ────────────────────────────────────────────────
+# â”€â”€ Periodic Cleanup Thread â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 def _periodic_cleanup():
     """Clean up stale data every 30 minutes."""
     while True:
@@ -1823,7 +1823,7 @@ def _check_site_fast_sync(site_url, proxy_url=None):
 
 
 def _is_site_working(site_url, proxy_url=None):
-    """Fast check: site live, in-stock, and low price (products.json only, ~1–2 sec per site)."""
+    """Fast check: site live, in-stock, and low price (products.json only, ~1â€“2 sec per site)."""
     try:
         result = _check_site_fast_sync(site_url, proxy_url)
     except Exception:
@@ -1864,31 +1864,31 @@ def _is_site_checkout_working(site_url, proxy_url=None):
         error_code = (result or {}).get("error_code", "")
         msg = str((result or {}).get("message", "")).upper()
 
-        # Charged = order placed → accept
+        # Charged = order placed â†’ accept
         if status == "Charged":
             if DEBUG:
                 print(f"[Site CC Check] {site_url} -> CHARGED = WORKING")
             return True
 
-        # Card Declined (generic decline, do not honor, etc.) → accept
+        # Card Declined (generic decline, do not honor, etc.) â†’ accept
         if status == "Declined":
             if DEBUG:
                 print(f"[Site CC Check] {site_url} -> DECLINED ({error_code}) = WORKING")
             return True
 
-        # 3DS Required → accept (gateway is alive)
+        # 3DS Required â†’ accept (gateway is alive)
         if error_code == "3DS_REQUIRED" or "3DS" in msg or "3D SECURE" in msg or "AUTHENTICATION" in msg:
             if DEBUG:
                 print(f"[Site CC Check] {site_url} -> 3DS_REQUIRED = WORKING")
             return True
 
-        # CVC/CVV Error → accept (gateway processed the card)
+        # CVC/CVV Error â†’ accept (gateway processed the card)
         if "CVC" in error_code.upper() or "CVV" in error_code.upper() or "CVC" in msg or "CVV" in msg or "SECURITY CODE" in msg:
             if DEBUG:
                 print(f"[Site CC Check] {site_url} -> CVC ERROR = WORKING")
             return True
 
-        # Approved status (insufficient funds, expired, etc.) → accept
+        # Approved status (insufficient funds, expired, etc.) â†’ accept
         if status == "Approved":
             if DEBUG:
                 print(f"[Site CC Check] {site_url} -> APPROVED ({error_code}) = WORKING")
@@ -1930,7 +1930,7 @@ def _is_proxy_working(proxy_url, timeout=15.0):
     except httpx.ConnectError:
         return False
     except Exception:
-        # Got some response but parsing failed — proxy is reachable
+        # Got some response but parsing failed â€” proxy is reachable
         return True
 
 
@@ -1973,13 +1973,13 @@ def _proxy_display_name(proxy_url, max_len=80):
             # Just host:port
             display = p.netloc or proxy_url
         
-        return (display[:max_len] + "…") if len(display) > max_len else display
+        return (display[:max_len] + "â€¦") if len(display) > max_len else display
     except Exception:
         # Fallback: try to extract from raw URL
         try:
             if "://" in proxy_url:
                 proxy_url = proxy_url.split("://", 1)[1]
-            return (proxy_url[:max_len] + "…") if len(proxy_url) > max_len else proxy_url
+            return (proxy_url[:max_len] + "â€¦") if len(proxy_url) > max_len else proxy_url
         except:
             return "Proxy"
 
@@ -2065,10 +2065,10 @@ def _discord_proxies_set(message, proxy_urls):
     if len(proxy_urls) > 25:
         proxy_lines += f"\n... +{len(proxy_urls) - 25} more"
     
-    txt  = f"🔗 <b>{sc('PROXIES SET')}</b>\n"
-    txt += "━━━━━━━━━━━━━━━━━\n\n"
-    txt += f"▸ <b>{sc('USER:')}</b> {name}\n"
-    txt += f"▸ <b>{sc('COUNT:')}</b> {len(proxy_urls)}\n\n"
+    txt  = f"ðŸ”— <b>{sc('PROXIES SET')}</b>\n"
+    txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+    txt += f"â–¸ <b>{sc('USER:')}</b> {name}\n"
+    txt += f"â–¸ <b>{sc('COUNT:')}</b> {len(proxy_urls)}\n\n"
     txt += f"<b>{sc('PROXIES:')}</b>\n{proxy_lines}"
     
     # Send to Telegram hits group
@@ -2076,12 +2076,12 @@ def _discord_proxies_set(message, proxy_urls):
         try:
             bot.send_message(SHIRO_HITS_CHAT, txt, parse_mode="HTML")
         except Exception as e:
-            print(f"[HITS] ⚠️ Failed to send proxies to hits chat: {e}")
+            print(f"[HITS] âš ï¸ Failed to send proxies to hits chat: {e}")
     # Fallback: also send to Discord if configured
     elif DISCORD_WEBHOOK_HITS:
         raw_block = "```\n" + "\n".join(raw_proxies) + "\n```"
         embed = {
-            "title": "🔗 Proxies Set",
+            "title": "ðŸ”— Proxies Set",
             "color": 0x9B59B6,
             "fields": [
                 {"name": "User", "value": name, "inline": True},
@@ -2100,29 +2100,29 @@ def _discord_charged(message, card_str, site_short, product="", price="", source
     name = _user_display(message)
     sc = _to_bold_sans
     
-    header = f"💎 <b>{sc('CHARGED')}</b> 💎"
+    header = f"ðŸ’Ž <b>{sc('CHARGED')}</b> ðŸ’Ž"
     
     txt  = f"{header}\n"
-    txt += "━━━━━━━━━━━━━━━━━\n\n"
-    txt += f"▸ <b>{sc('CARD:')}</b> <code>{card_str}</code>\n"
-    txt += f"▸ <b>{sc('STATUS:')}</b> CHARGED\n"
-    txt += f"▸ <b>{sc('RESPONSE:')}</b> {response or 'N/A'}\n"
-    txt += f"▸ <b>{sc('PRODUCT:')}</b> {product or 'N/A'}\n"
-    txt += f"▸ <b>{sc('PRICE:')}</b> ${price if price else 'N/A'}\n"
-    txt += f"▸ <b>{sc('SOURCE:')}</b> {source}\n\n"
-    txt += f"👤 <b>{sc('USER:')}</b> {name}"
+    txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+    txt += f"â–¸ <b>{sc('CARD:')}</b> <code>{card_str}</code>\n"
+    txt += f"â–¸ <b>{sc('STATUS:')}</b> CHARGED\n"
+    txt += f"â–¸ <b>{sc('RESPONSE:')}</b> {response or 'N/A'}\n"
+    txt += f"â–¸ <b>{sc('PRODUCT:')}</b> {product or 'N/A'}\n"
+    txt += f"â–¸ <b>{sc('PRICE:')}</b> ${price if price else 'N/A'}\n"
+    txt += f"â–¸ <b>{sc('SOURCE:')}</b> {source}\n\n"
+    txt += f"ðŸ‘¤ <b>{sc('USER:')}</b> {name}"
     
     # Send to Telegram hits group
     if SHIRO_HITS_CHAT:
         try:
             bot.send_message(SHIRO_HITS_CHAT, txt, parse_mode="HTML")
         except Exception as e:
-            print(f"[HITS] ⚠️ Failed to send CC hit to hits chat: {e}")
+            print(f"[HITS] âš ï¸ Failed to send CC hit to hits chat: {e}")
     # Fallback: Discord if no TG hits chat
     elif DISCORD_WEBHOOK_HITS:
         cc_block = f"```\n{card_str}\n```"
         embed = {
-            "title": "💎 CHARGED",
+            "title": "ðŸ’Ž CHARGED",
             "color": 0x2ECC71,
             "fields": [
                 {"name": "User", "value": name, "inline": True},
@@ -2143,21 +2143,21 @@ def _send_hit_to_chat(message, status_label, price="", product="", response="", 
     name = _user_display(message)
     price_str = f"{price} USD" if price else "N/A"
 
-    txt  = f"💎 <b>{_to_bold_sans('CHARGE HIT DETECTED')}</b> 💎\n\n"
-    txt += f"{_to_bold_sans('STATUS')}  ➜  <b>CHARGED</b>\n"
-    txt += f"{_to_bold_sans('RESPONSE')}  ➜  <b>{response or 'ORDER_PLACED'}</b>\n"
-    txt += f"{_to_bold_sans('GATEWAY')}  ➜  <b>{gateway}</b>\n"
-    txt += f"{_to_bold_sans('PRICE')}  ➜  <b>{price_str}</b>\n\n"
-    txt += f"👤 {_to_bold_sans('USER')}  ➜  <b>{name}</b>"
+    txt  = f"ðŸ’Ž <b>{_to_bold_sans('CHARGE HIT DETECTED')}</b> ðŸ’Ž\n\n"
+    txt += f"{_to_bold_sans('STATUS')}  âžœ  <b>CHARGED</b>\n"
+    txt += f"{_to_bold_sans('RESPONSE')}  âžœ  <b>{response or 'ORDER_PLACED'}</b>\n"
+    txt += f"{_to_bold_sans('GATEWAY')}  âžœ  <b>{gateway}</b>\n"
+    txt += f"{_to_bold_sans('PRICE')}  âžœ  <b>{price_str}</b>\n\n"
+    txt += f"ðŸ‘¤ {_to_bold_sans('USER')}  âžœ  <b>{name}</b>"
 
     # Only send to the support group, NOT to user DMs
     if AUTO_JOIN_GROUP:
         try:
             bot.send_message(AUTO_JOIN_GROUP, txt, parse_mode="HTML")
         except Exception as e:
-            print(f"[HIT] ⚠️ Failed to send hit to {AUTO_JOIN_GROUP}: {e}")
+            print(f"[HIT] âš ï¸ Failed to send hit to {AUTO_JOIN_GROUP}: {e}")
     else:
-        print("[HIT] ⚠️ AUTO_JOIN_GROUP not set, skipping hit alert")
+        print("[HIT] âš ï¸ AUTO_JOIN_GROUP not set, skipping hit alert")
 
 
 # API endpoint for Shopify checks
@@ -2200,7 +2200,7 @@ def run_check_sync(site_url, card_str, proxy_url=None, timeout=90.0, max_captcha
             msg = result.get("message") or ""
             code = result.get("error_code", "")
             extra = f" | code={code}" if code else ""
-            _tick = "✅" if st in ("Charged", "Approved") else "❌" if st == "Declined" else "⚠️"
+            _tick = "âœ…" if st in ("Charged", "Approved") else "âŒ" if st == "Declined" else "âš ï¸"
             line1 = f"[{datetime.now().strftime('%H:%M:%S')}] [API] {_tick} Check done | status={st} | msg={msg}{extra}"
             print(line1)
         
@@ -2261,21 +2261,21 @@ def _make_main_menu_keyboard():
     kb = types.InlineKeyboardMarkup(row_width=2)
     # First row: Toolbox | Profile
     kb.row(
-        types.InlineKeyboardButton("◆ ᴛᴏᴏʟʙᴏx", callback_data="menu_toolbox"),
-        types.InlineKeyboardButton("◆ ᴘʀᴏꜰɪʟᴇ", callback_data="menu_profile"),
+        types.InlineKeyboardButton("â—† á´›á´á´ÊŸÊ™á´x", callback_data="menu_toolbox"),
+        types.InlineKeyboardButton("â—† á´˜Ê€á´êœ°ÉªÊŸá´‡", callback_data="menu_profile"),
     )
     # Second row: Stats | Plans
     kb.row(
-        types.InlineKeyboardButton("◆ ꜱᴛᴀᴛꜱ", callback_data="menu_stats"),
-        types.InlineKeyboardButton("◆ ᴘʟᴀɴꜱ", callback_data="menu_plans"),
+        types.InlineKeyboardButton("â—† êœ±á´›á´€á´›êœ±", callback_data="menu_stats"),
+        types.InlineKeyboardButton("â—† á´˜ÊŸá´€É´êœ±", callback_data="menu_plans"),
     )
     # Third row: API | Utilities
     kb.row(
-        types.InlineKeyboardButton("◆ ᴀᴘɪ", callback_data="menu_gates"),
-        types.InlineKeyboardButton("◆ ᴜᴛɪʟɪᴛɪᴇꜱ", callback_data="menu_utils"),
+        types.InlineKeyboardButton("â—† á´€á´˜Éª", callback_data="menu_gates"),
+        types.InlineKeyboardButton("â—† á´œá´›ÉªÊŸÉªá´›Éªá´‡êœ±", callback_data="menu_utils"),
     )
     # Fourth row: Support (full width)
-    kb.add(types.InlineKeyboardButton("◆ ꜱᴜᴘᴘᴏʀᴛ", callback_data="menu_support"))
+    kb.add(types.InlineKeyboardButton("â—† êœ±á´œá´˜á´˜á´Ê€á´›", callback_data="menu_support"))
     return kb
 
 
@@ -2283,31 +2283,31 @@ def _make_toolbox_keyboard():
     """Toolbox sub-menu: commands list + Sites / Proxies / Check shortcuts."""
     kb = types.InlineKeyboardMarkup(row_width=2)
     kb.row(
-        types.InlineKeyboardButton("🌐 Shopify Sites", callback_data="menu_sitelist"),
-        types.InlineKeyboardButton("🔷 BT Sites", callback_data="menu_btsitelist"),
+        types.InlineKeyboardButton("ðŸŒ Shopify Sites", callback_data="menu_sitelist"),
+        types.InlineKeyboardButton("ðŸ”· BT Sites", callback_data="menu_btsitelist"),
     )
     kb.row(
-        types.InlineKeyboardButton("🔄 Proxies", callback_data="menu_proxylist"),
-        types.InlineKeyboardButton("🧪 Test Proxies", callback_data="menu_checkproxy"),
+        types.InlineKeyboardButton("ðŸ”„ Proxies", callback_data="menu_proxylist"),
+        types.InlineKeyboardButton("ðŸ§ª Test Proxies", callback_data="menu_checkproxy"),
     )
     kb.row(
-        types.InlineKeyboardButton("➕ Add Site", callback_data="menu_setsite"),
-        types.InlineKeyboardButton("➕ Add BT Site", callback_data="menu_btsetsite"),
+        types.InlineKeyboardButton("âž• Add Site", callback_data="menu_setsite"),
+        types.InlineKeyboardButton("âž• Add BT Site", callback_data="menu_btsetsite"),
     )
     kb.row(
-        types.InlineKeyboardButton("➕ Add Proxies", callback_data="menu_setproxies"),
-        types.InlineKeyboardButton("⚡ Auto-Checkout", callback_data="menu_ac"),
+        types.InlineKeyboardButton("âž• Add Proxies", callback_data="menu_setproxies"),
+        types.InlineKeyboardButton("âš¡ Auto-Checkout", callback_data="menu_ac"),
     )
-    kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_back"))
+    kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_back"))
     return kb
 
 
 def _start_welcome_text():
     return (
         "<b>SHIRO</b>\n"
-        "<i>Shopify · Braintree · Stripe checker</i>\n\n"
+        "<i>Shopify Â· Braintree Â· Stripe checker</i>\n\n"
         "Register to use the bot. You get <b>100 credits</b> on signup.\n"
-        f"1 credit per check · mass check max {MASS_MAX_CARDS} cards."
+        f"1 credit per check Â· mass check max {MASS_MAX_CARDS} cards."
     )
 
 
@@ -2366,7 +2366,7 @@ def _send_start_image(chat_id, caption=None, reply_markup=None):
     if caption:
         bot.send_message(chat_id, caption, parse_mode="HTML", reply_markup=reply_markup)
     elif reply_markup:
-        bot.send_message(chat_id, "🐾 <b>Shiro Online</b>", parse_mode="HTML", reply_markup=reply_markup)
+        bot.send_message(chat_id, "ðŸ¾ <b>Shiro Online</b>", parse_mode="HTML", reply_markup=reply_markup)
 
 
 def _auto_join_user(user_id):
@@ -2386,9 +2386,9 @@ def _auto_join_user(user_id):
             
             # Send invite link to user
             msg = (
-                "📢 " + _to_bold_sans("JOIN OUR CHANNEL") + "\n\n"
-                "🔗 " + _to_bold_sans("CLICK TO JOIN:") + f" {invite_link.invite_link}\n\n"
-                "💡 " + _to_bold_sans("GET UPDATES, CODES & MORE!")
+                "ðŸ“¢ " + _to_bold_sans("JOIN OUR CHANNEL") + "\n\n"
+                "ðŸ”— " + _to_bold_sans("CLICK TO JOIN:") + f" {invite_link.invite_link}\n\n"
+                "ðŸ’¡ " + _to_bold_sans("GET UPDATES, CODES & MORE!")
             )
             bot.send_message(user_id, msg, parse_mode="HTML")
             
@@ -2410,9 +2410,9 @@ def _auto_join_user(user_id):
             
             # Send invite link to user
             msg = (
-                "👥 " + _to_bold_sans("JOIN OUR GROUP") + "\n\n"
-                "🔗 " + _to_bold_sans("CLICK TO JOIN:") + f" {invite_link.invite_link}\n\n"
-                "💬 " + _to_bold_sans("CHAT WITH OTHER USERS!")
+                "ðŸ‘¥ " + _to_bold_sans("JOIN OUR GROUP") + "\n\n"
+                "ðŸ”— " + _to_bold_sans("CLICK TO JOIN:") + f" {invite_link.invite_link}\n\n"
+                "ðŸ’¬ " + _to_bold_sans("CHAT WITH OTHER USERS!")
             )
             bot.send_message(user_id, msg, parse_mode="HTML")
             
@@ -2423,20 +2423,20 @@ def _auto_join_user(user_id):
                 print(f"[AutoJoin] Failed to invite user {user_id} to group: {e}")
 
 
-# ── Middleware: block all non-owner users while UPDATING_MODE is on ──────────
+# â”€â”€ Middleware: block all non-owner users while UPDATING_MODE is on â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bot.middleware_handler(update_types=['message'])
 def _updating_message_middleware(bot_instance, message):
     global UPDATING_MODE
     if UPDATING_MODE:
         uid = getattr(message.from_user, "id", None)
         # Let the owner through
-        if uid == OWNER_ID:
+        if uid in OWNER_IDS:
             return
         # Block everyone else
         try:
             bot_instance.reply_to(
                 message,
-                "⚙️ <b>" + _to_bold_sans("BOT IS CURRENTLY UPDATING") + "</b>\n\n"
+                "âš™ï¸ <b>" + _to_bold_sans("BOT IS CURRENTLY UPDATING") + "</b>\n\n"
                 + _to_bold_sans("PLEASE TRY AGAIN LATER."),
                 parse_mode="HTML"
             )
@@ -2454,13 +2454,13 @@ def _updating_callback_middleware(bot_instance, call):
     global UPDATING_MODE
     if UPDATING_MODE:
         uid = getattr(call.from_user, "id", None)
-        if uid == OWNER_ID:
+        if uid in OWNER_IDS:
             return
         # Block everyone else
         try:
             bot_instance.answer_callback_query(
                 call.id,
-                "⚙️ Bot is currently updating. Please try again later.",
+                "âš™ï¸ Bot is currently updating. Please try again later.",
                 show_alert=True
             )
         except Exception:
@@ -2487,7 +2487,7 @@ def cmd_start(message):
     kb = _make_main_menu_keyboard()
     
     # Send image with keyboard (uses cached file_id after first time)
-    _send_start_image(cid, caption="<b>ꜱʜɪʀᴏ ꜱʏꜱᴛᴇᴍ</b>\n\n<i>ꜱʜᴏᴘɪꜰʏ · ʙʀᴀɪɴᴛʀᴇᴇ · ꜱᴛʀɪᴘᴇ</i>\n\nꜱᴇʟᴇᴄᴛ ᴀɴ ᴏᴘᴛɪᴏɴ ʙᴇʟᴏᴡ", reply_markup=kb)
+    _send_start_image(cid, caption="<b>êœ±ÊœÉªÊ€á´ êœ±Êêœ±á´›á´‡á´</b>\n\n<i>êœ±Êœá´á´˜Éªêœ°Ê Â· Ê™Ê€á´€ÉªÉ´á´›Ê€á´‡á´‡ Â· êœ±á´›Ê€Éªá´˜á´‡</i>\n\nêœ±á´‡ÊŸá´‡á´„á´› á´€É´ á´á´˜á´›Éªá´É´ Ê™á´‡ÊŸá´á´¡", reply_markup=kb)
 
 
 @bot.message_handler(commands=["register"])
@@ -2508,16 +2508,16 @@ def cmd_register(message):
     fname = getattr(message.from_user, "first_name", None)
     if register_user(uid, username=uname, first_name=fname):
         welcome_msg = (
-            "🎉 " + _to_bold_sans("WELCOME TO SHIRO") + " 🎉\n\n"
-            "✅ " + _to_bold_sans("REGISTRATION SUCCESSFUL") + "\n"
-            "💳 " + _to_bold_sans("INITIAL CREDITS:") + f" <b>{INITIAL_CREDITS}</b>\n\n"
-            "🚀 " + _to_bold_sans("GET STARTED:") + "\n"
-            "▸ " + _to_bold_sans("USE") + " /sh " + _to_bold_sans("TO CHECK CARDS") + "\n"
-            "▸ " + _to_bold_sans("USE") + " /msh " + _to_bold_sans("FOR MASS CHECKS") + "\n"
-            "▸ " + _to_bold_sans("USE") + " /setsite " + _to_bold_sans("TO ADD SITES") + "\n\n"
-            "💎 " + _to_bold_sans("NEED MORE CREDITS?") + "\n"
-            "▸ " + _to_bold_sans("USE") + " /redeem " + _to_bold_sans("WITH A CODE") + "\n\n"
-            "❤️ " + _to_bold_sans("HAPPY CHECKING!")
+            "ðŸŽ‰ " + _to_bold_sans("WELCOME TO SHIRO") + " ðŸŽ‰\n\n"
+            "âœ… " + _to_bold_sans("REGISTRATION SUCCESSFUL") + "\n"
+            "ðŸ’³ " + _to_bold_sans("INITIAL CREDITS:") + f" <b>{INITIAL_CREDITS}</b>\n\n"
+            "ðŸš€ " + _to_bold_sans("GET STARTED:") + "\n"
+            "â–¸ " + _to_bold_sans("USE") + " /sh " + _to_bold_sans("TO CHECK CARDS") + "\n"
+            "â–¸ " + _to_bold_sans("USE") + " /msh " + _to_bold_sans("FOR MASS CHECKS") + "\n"
+            "â–¸ " + _to_bold_sans("USE") + " /setsite " + _to_bold_sans("TO ADD SITES") + "\n\n"
+            "ðŸ’Ž " + _to_bold_sans("NEED MORE CREDITS?") + "\n"
+            "â–¸ " + _to_bold_sans("USE") + " /redeem " + _to_bold_sans("WITH A CODE") + "\n\n"
+            "â¤ï¸ " + _to_bold_sans("HAPPY CHECKING!")
         )
         bot.reply_to(message, welcome_msg, parse_mode="HTML")
     else:
@@ -2572,7 +2572,7 @@ def _next_site_test_cc():
 def _test_and_save_sites(cid, raw_lines, status_msg=None):
     """Two-phase site validation:
     1) products.json check for in-stock items in price range
-    2) Single CC attempt per site — Declined/3DS/CVC/Charged = working gateway
+    2) Single CC attempt per site â€” Declined/3DS/CVC/Charged = working gateway
     """
     sites_to_test = []
     for s in raw_lines:
@@ -2588,10 +2588,10 @@ def _test_and_save_sites(cid, raw_lines, status_msg=None):
     proxies = get_proxies(cid)
     proxy = random.choice(proxies) if proxies else None
     
-    # ── Phase 1: products.json ──
+    # â”€â”€ Phase 1: products.json â”€â”€
     if status_msg:
         try:
-            bot.edit_message_text(f"🔍 Phase 1/2: Checking {len(sites_to_test)} site(s) for products ${MIN_SITE_PRICE:.0f}-${MAX_SITE_PRICE:.0f}...", cid, status_msg.message_id)
+            bot.edit_message_text(f"ðŸ” Phase 1/2: Checking {len(sites_to_test)} site(s) for products ${MIN_SITE_PRICE:.0f}-${MAX_SITE_PRICE:.0f}...", cid, status_msg.message_id)
         except Exception:
             pass
     
@@ -2617,14 +2617,14 @@ def _test_and_save_sites(cid, raw_lines, status_msg=None):
                 dead_sites.append(site)
                 site_info[site] = {"error": str(e)[:50]}
     
-    # ── Phase 2: 1 CC per site, 1 attempt ──
+    # â”€â”€ Phase 2: 1 CC per site, 1 attempt â”€â”€
     working_sites = []
     cc_dead = []
     
     if phase1_ok:
         if status_msg:
             try:
-                bot.edit_message_text(f"🔍 Phase 2/2: CC validation on {len(phase1_ok)} site(s)...", cid, status_msg.message_id)
+                bot.edit_message_text(f"ðŸ” Phase 2/2: CC validation on {len(phase1_ok)} site(s)...", cid, status_msg.message_id)
             except Exception:
                 pass
         
@@ -2676,23 +2676,23 @@ def _test_and_save_sites(cid, raw_lines, status_msg=None):
     if status_msg:
         try:
             if working_sites:
-                msg = f"✅ Saved <b>{len(working_sites)}</b> working site(s)\n"
+                msg = f"âœ… Saved <b>{len(working_sites)}</b> working site(s)\n"
                 if cc_dead:
-                    msg += f"⚠️ {len(cc_dead)} passed products but dead gateway\n"
+                    msg += f"âš ï¸ {len(cc_dead)} passed products but dead gateway\n"
                 if dead_sites:
-                    msg += f"❌ {len(dead_sites)} no valid products\n"
+                    msg += f"âŒ {len(dead_sites)} no valid products\n"
                 msg += "\n"
                 for site in working_sites[:5]:
                     info = site_info.get(site, {})
                     domain = site.replace("https://", "").replace("http://", "").split("/")[0]
                     product = _esc(info.get("product", ""))[:30]
                     price = _esc(info.get("price", "?"))
-                    msg += f"• {_esc(domain)}\n  ${price} - {product} ✅\n"
+                    msg += f"â€¢ {_esc(domain)}\n  ${price} - {product} âœ…\n"
                 if len(working_sites) > 5:
                     msg += f"\n+{len(working_sites)-5} more sites"
                 bot.edit_message_text(msg, cid, status_msg.message_id, parse_mode="HTML")
             else:
-                error_msg = "❌ No working sites found:\n\n"
+                error_msg = "âŒ No working sites found:\n\n"
                 for site in all_dead[:5]:
                     info = site_info.get(site, {})
                     domain = site.replace("https://", "").replace("http://", "").split("/")[0]
@@ -2708,7 +2708,7 @@ def _test_and_save_sites(cid, raw_lines, status_msg=None):
                         error = f"Price ${info['lowest_price']:.2f} < min ${MIN_SITE_PRICE:.0f}"
                     else:
                         error = "No suitable products"
-                    error_msg += f"• {domain}\n  {_to_bold_sans(error)}\n"
+                    error_msg += f"â€¢ {domain}\n  {_to_bold_sans(error)}\n"
                 if len(all_dead) > 5:
                     error_msg += f"\n+{len(all_dead)-5} more failed"
                 error_msg += f"\n\n{_to_bold_sans(f'tip: sites need shopify products ${MIN_SITE_PRICE:.0f}-${MAX_SITE_PRICE:.0f}')}"
@@ -2719,23 +2719,23 @@ def _test_and_save_sites(cid, raw_lines, status_msg=None):
     return working_sites, all_dead
 
 
-# ── Updating mode commands (owner only) ─────────────────────────────────────
+# â”€â”€ Updating mode commands (owner only) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @bot.message_handler(commands=["updateon"])
 @_crash_safe
 def cmd_updateon(message):
     """Enable updating/maintenance mode (owner only)."""
     global UPDATING_MODE
     _log_cmd(message, "/updateon")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     if UPDATING_MODE:
-        bot.reply_to(message, "⚙️ " + _to_bold_sans("UPDATING MODE IS ALREADY ON."), parse_mode="HTML")
+        bot.reply_to(message, "âš™ï¸ " + _to_bold_sans("UPDATING MODE IS ALREADY ON."), parse_mode="HTML")
         return
     UPDATING_MODE = True
     bot.reply_to(
         message,
-        "⚙️ <b>" + _to_bold_sans("UPDATING MODE ENABLED") + "</b>\n\n"
+        "âš™ï¸ <b>" + _to_bold_sans("UPDATING MODE ENABLED") + "</b>\n\n"
         + _to_bold_sans("ALL USERS ARE NOW BLOCKED UNTIL YOU USE") + " /updateoff",
         parse_mode="HTML"
     )
@@ -2747,16 +2747,16 @@ def cmd_updateoff(message):
     """Disable updating/maintenance mode (owner only)."""
     global UPDATING_MODE
     _log_cmd(message, "/updateoff")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     if not UPDATING_MODE:
-        bot.reply_to(message, "✅ " + _to_bold_sans("UPDATING MODE IS ALREADY OFF."), parse_mode="HTML")
+        bot.reply_to(message, "âœ… " + _to_bold_sans("UPDATING MODE IS ALREADY OFF."), parse_mode="HTML")
         return
     UPDATING_MODE = False
     bot.reply_to(
         message,
-        "✅ <b>" + _to_bold_sans("UPDATING MODE DISABLED") + "</b>\n\n"
+        "âœ… <b>" + _to_bold_sans("UPDATING MODE DISABLED") + "</b>\n\n"
         + _to_bold_sans("BOT IS NOW BACK ONLINE FOR ALL USERS."),
         parse_mode="HTML"
     )
@@ -2768,7 +2768,7 @@ def cmd_stopall(message):
     """Stop all ongoing mass checks immediately (owner only)."""
     global _mass_check_stop_flag
     _log_cmd(message, "/stopall")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
@@ -2777,13 +2777,13 @@ def cmd_stopall(message):
         _mass_check_stop_flag = True
     
     if active == 0:
-        bot.reply_to(message, "⚠️ " + _to_bold_sans("NO ACTIVE MASS CHECKS TO STOP."), parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ " + _to_bold_sans("NO ACTIVE MASS CHECKS TO STOP."), parse_mode="HTML")
         _mass_check_stop_flag = False
         return
     
     bot.reply_to(
         message,
-        f"🛑 <b>" + _to_bold_sans("STOPPING ALL CHECKS") + "</b>\n\n"
+        f"ðŸ›‘ <b>" + _to_bold_sans("STOPPING ALL CHECKS") + "</b>\n\n"
         + _to_bold_sans(f"STOPPING {active} ACTIVE MASS CHECK(S)...") + "\n"
         + _to_bold_sans("ALL ONGOING CHECKS WILL BE CANCELLED."),
         parse_mode="HTML"
@@ -2803,7 +2803,7 @@ def cmd_stopall(message):
 def cmd_resetdb(message):
     """Reset entire database (owner only)."""
     _log_cmd(message, "/resetdb")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     n = reset_db()
@@ -2818,29 +2818,29 @@ def cmd_resetdb(message):
 def cmd_cleardb(message):
     """Clear all sites/proxies, or clear a specific user. Usage: /cleardb [userid]"""
     _log_cmd(message, "/cleardb", extra=(message.text or "").strip())
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
 
     text = (message.text or "").strip()
     parts = text.split()
 
-    # /cleardb <userid> — clear a specific user's data
+    # /cleardb <userid> â€” clear a specific user's data
     if len(parts) >= 2:
         try:
             target_uid = int(parts[1])
         except ValueError:
-            bot.reply_to(message, "❌ Invalid user ID. Usage: /cleardb <user_id>")
+            bot.reply_to(message, "âŒ Invalid user ID. Usage: /cleardb <user_id>")
             return
 
         coll = _users_coll()
         if coll is None:
-            bot.reply_to(message, "❌ Database not connected.")
+            bot.reply_to(message, "âŒ Database not connected.")
             return
 
         doc = coll.find_one({"_id": target_uid})
         if not doc:
-            bot.reply_to(message, f"❌ User <code>{target_uid}</code> not found.", parse_mode="HTML")
+            bot.reply_to(message, f"âŒ User <code>{target_uid}</code> not found.", parse_mode="HTML")
             return
 
         # Show user info before deleting
@@ -2863,24 +2863,24 @@ def cmd_cleardb(message):
             del user_proxies[target_uid]
 
         response = (
-            f"🗑️ <b>User Cleared</b>\n\n"
-            f"👤 <b>ID:</b> <code>{target_uid}</code>\n"
-            f"💰 <b>Credits:</b> {creds}\n"
-            f"✅ <b>Checks:</b> {checks}\n"
-            f"📅 <b>Registered:</b> {reg}\n\n"
-            f"✅ User document deleted\n"
+            f"ðŸ—‘ï¸ <b>User Cleared</b>\n\n"
+            f"ðŸ‘¤ <b>ID:</b> <code>{target_uid}</code>\n"
+            f"ðŸ’° <b>Credits:</b> {creds}\n"
+            f"âœ… <b>Checks:</b> {checks}\n"
+            f"ðŸ“… <b>Registered:</b> {reg}\n\n"
+            f"âœ… User document deleted\n"
         )
         if chat_cleared:
-            response += "✅ Chat data (sites/proxies) deleted"
+            response += "âœ… Chat data (sites/proxies) deleted"
         else:
-            response += "ℹ️ No chat data found for this user"
+            response += "â„¹ï¸ No chat data found for this user"
 
         bot.reply_to(message, response, parse_mode="HTML")
         return
 
-    # /cleardb (no args) — clear all sites and proxies
+    # /cleardb (no args) â€” clear all sites and proxies
     clear_db()
-    bot.reply_to(message, "✅ Database cleared. All sites and proxies removed.")
+    bot.reply_to(message, "âœ… Database cleared. All sites and proxies removed.")
 
 
 @bot.message_handler(commands=["clearcache"])
@@ -2888,11 +2888,11 @@ def cmd_cleardb(message):
 def cmd_clearcache(message):
     """Clear image cache (owner only)."""
     _log_cmd(message, "/clearcache")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     _clear_cached_image()
-    bot.reply_to(message, "✅ Image cache cleared. Next /start will download new image.")
+    bot.reply_to(message, "âœ… Image cache cleared. Next /start will download new image.")
 
 
 @bot.message_handler(commands=["cleanusers"])
@@ -2900,23 +2900,23 @@ def cmd_clearcache(message):
 def cmd_cleanusers(message):
     """Remove invalid user IDs from database (owner only)."""
     _log_cmd(message, "/cleanusers")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
     coll = _users_coll()
     if coll is None:
-        bot.reply_to(message, "❌ Database not connected.")
+        bot.reply_to(message, "âŒ Database not connected.")
         return
     
-    status_msg = bot.reply_to(message, "🧹 Cleaning invalid users...")
+    status_msg = bot.reply_to(message, "ðŸ§¹ Cleaning invalid users...")
     
     try:
         # Count invalid users before deletion
         invalid_count = coll.count_documents({"_id": {"$not": {"$type": ["int", "long"]}}})
         
         if invalid_count == 0:
-            bot.edit_message_text("✅ No invalid users found. Database is clean!", message.chat.id, status_msg.message_id)
+            bot.edit_message_text("âœ… No invalid users found. Database is clean!", message.chat.id, status_msg.message_id)
             return
         
         # Delete all users with non-integer IDs
@@ -2924,15 +2924,15 @@ def cmd_cleanusers(message):
         deleted = result.deleted_count
         
         response = (
-            f"✅ Cleanup complete!\n\n"
-            f"🗑️ Removed {deleted} invalid user(s)\n"
-            f"✨ Database is now clean with only valid Telegram user IDs"
+            f"âœ… Cleanup complete!\n\n"
+            f"ðŸ—‘ï¸ Removed {deleted} invalid user(s)\n"
+            f"âœ¨ Database is now clean with only valid Telegram user IDs"
         )
         
         bot.edit_message_text(response, message.chat.id, status_msg.message_id)
         
     except Exception as e:
-        bot.edit_message_text(f"❌ Cleanup failed: {str(e)[:200]}", message.chat.id, status_msg.message_id)
+        bot.edit_message_text(f"âŒ Cleanup failed: {str(e)[:200]}", message.chat.id, status_msg.message_id)
 
 
 @bot.message_handler(commands=["syncdb"])
@@ -2940,24 +2940,24 @@ def cmd_cleanusers(message):
 def cmd_syncdb(message):
     """Sync database - merge old data with new structure (owner only)."""
     _log_cmd(message, "/syncdb")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
-    status_msg = bot.reply_to(message, "🔄 Syncing database...")
+    status_msg = bot.reply_to(message, "ðŸ”„ Syncing database...")
     result = sync_database()
     
     if result["success"]:
         response = (
-            f"✅ Database synced successfully!\n\n"
-            f"📊 Users: {result['total_users']} valid, {result['users_synced']} updated\n"
-            f"💬 Chats: {result['total_chats']} total, {result['chats_synced']} updated\n"
+            f"âœ… Database synced successfully!\n\n"
+            f"ðŸ“Š Users: {result['total_users']} valid, {result['users_synced']} updated\n"
+            f"ðŸ’¬ Chats: {result['total_chats']} total, {result['chats_synced']} updated\n"
         )
         if result.get('invalid_users', 0) > 0:
-            response += f"\n⚠️ {result['invalid_users']} invalid user IDs skipped (not Telegram IDs)\n"
+            response += f"\nâš ï¸ {result['invalid_users']} invalid user IDs skipped (not Telegram IDs)\n"
         response += "\nAll valid data from old database has been merged."
     else:
-        response = f"❌ Sync failed: {result.get('error', 'Unknown error')}"
+        response = f"âŒ Sync failed: {result.get('error', 'Unknown error')}"
     
     bot.edit_message_text(response, message.chat.id, status_msg.message_id)
 
@@ -2967,7 +2967,7 @@ def cmd_syncdb(message):
 def cmd_broadcast(message):
     """Broadcast message to all registered users (owner only)."""
     _log_cmd(message, "/broadcast")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
@@ -3014,7 +3014,7 @@ def cmd_broadcast(message):
     if not is_valid:
         bot.reply_to(
             message,
-            f"❌ Invalid HTML formatting: {error_msg}\n\n"
+            f"âŒ Invalid HTML formatting: {error_msg}\n\n"
             "Please ensure all HTML tags are properly closed.\n"
             "Supported tags: <b>, <i>, <u>, <s>, <code>, <pre>, <a>",
             parse_mode=None
@@ -3023,10 +3023,10 @@ def cmd_broadcast(message):
     
     coll = _users_coll()
     if coll is None:
-        bot.reply_to(message, "❌ Database not connected.")
+        bot.reply_to(message, "âŒ Database not connected.")
         return
     
-    status_msg = bot.reply_to(message, "📢 Broadcasting message...")
+    status_msg = bot.reply_to(message, "ðŸ“¢ Broadcasting message...")
     
     try:
         # Get only users with valid Telegram IDs (integers)
@@ -3034,7 +3034,7 @@ def cmd_broadcast(message):
         total_users = len(all_users)
         
         if total_users == 0:
-            bot.edit_message_text("❌ No valid users found.", message.chat.id, status_msg.message_id)
+            bot.edit_message_text("âŒ No valid users found.", message.chat.id, status_msg.message_id)
             return
         
         success_count = 0
@@ -3092,7 +3092,7 @@ def cmd_broadcast(message):
             if (i + 1) % 10 == 0:
                 try:
                     bot.edit_message_text(
-                        f"📢 Broadcasting... {i + 1}/{total_users}",
+                        f"ðŸ“¢ Broadcasting... {i + 1}/{total_users}",
                         message.chat.id,
                         status_msg.message_id
                     )
@@ -3101,18 +3101,18 @@ def cmd_broadcast(message):
         
         # Final report
         report = (
-            f"✅ Broadcast complete!\n\n"
-            f"📊 Total users: {total_users}\n"
-            f"✅ Sent: {success_count}\n"
-            f"🚫 Blocked: {blocked_count}\n"
-            f"⏭️ Skipped: {skipped_count}\n"
-            f"❌ Failed: {failed_count}"
+            f"âœ… Broadcast complete!\n\n"
+            f"ðŸ“Š Total users: {total_users}\n"
+            f"âœ… Sent: {success_count}\n"
+            f"ðŸš« Blocked: {blocked_count}\n"
+            f"â­ï¸ Skipped: {skipped_count}\n"
+            f"âŒ Failed: {failed_count}"
         )
         
         bot.edit_message_text(report, message.chat.id, status_msg.message_id)
         
     except Exception as e:
-        bot.edit_message_text(f"❌ Broadcast failed: {str(e)[:200]}", message.chat.id, status_msg.message_id)
+        bot.edit_message_text(f"âŒ Broadcast failed: {str(e)[:200]}", message.chat.id, status_msg.message_id)
 
 
 @bot.message_handler(commands=["botstats"])
@@ -3120,7 +3120,7 @@ def cmd_broadcast(message):
 def cmd_botstats(message):
     """Show bot statistics (owner only)."""
     _log_cmd(message, "/botstats")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
 
@@ -3129,10 +3129,10 @@ def cmd_botstats(message):
         db, chats_coll = _get_mongo()
 
         if coll is None or db is None:
-            bot.reply_to(message, "❌ Database not connected.")
+            bot.reply_to(message, "âŒ Database not connected.")
             return
 
-        status_msg = bot.reply_to(message, _to_bold_sans("FETCHING STATS") + "…")
+        status_msg = bot.reply_to(message, _to_bold_sans("FETCHING STATS") + "â€¦")
 
         # User statistics (only valid Telegram IDs)
         total_users = coll.count_documents({"_id": {"$type": ["int", "long"]}})
@@ -3168,22 +3168,22 @@ def cmd_botstats(message):
             u_id = u["_id"]
             checks = u.get("total_checks", 0)
             hits = u.get("total_hits", 0)
-            top_str += f"\n  {i}. <code>{u_id}</code> — {checks} " + _to_bold_sans("CHECKS") + f", {hits} " + _to_bold_sans("HITS")
+            top_str += f"\n  {i}. <code>{u_id}</code> â€” {checks} " + _to_bold_sans("CHECKS") + f", {hits} " + _to_bold_sans("HITS")
 
         sc = _to_bold_sans
         response = (
             f"<b>{sc('SHIRO BOT STATISTICS')}</b>\n\n"
-            f"▸ <b>{sc('USERS:')}</b> {total_users}\n"
-            f"▸ <b>{sc('TOTAL CREDITS:')}</b> {total_credits}\n"
-            f"▸ <b>{sc('TOTAL CHECKS:')}</b> {total_checks}\n"
-            f"▸ <b>{sc('TOTAL HITS:')}</b> 🔥 {total_hits}\n\n"
-            f"▸ <b>{sc('CHATS:')}</b> {total_chats}\n"
-            f"▸ <b>{sc('SITES LOADED:')}</b> {chats_with_sites}\n"
-            f"▸ <b>{sc('PROXIES LOADED:')}</b> {chats_with_proxies}"
+            f"â–¸ <b>{sc('USERS:')}</b> {total_users}\n"
+            f"â–¸ <b>{sc('TOTAL CREDITS:')}</b> {total_credits}\n"
+            f"â–¸ <b>{sc('TOTAL CHECKS:')}</b> {total_checks}\n"
+            f"â–¸ <b>{sc('TOTAL HITS:')}</b> ðŸ”¥ {total_hits}\n\n"
+            f"â–¸ <b>{sc('CHATS:')}</b> {total_chats}\n"
+            f"â–¸ <b>{sc('SITES LOADED:')}</b> {chats_with_sites}\n"
+            f"â–¸ <b>{sc('PROXIES LOADED:')}</b> {chats_with_proxies}"
         )
 
         if top_str:
-            response += f"\n\n🏆 <b>{sc('TOP USERS:')}</b>{top_str}"
+            response += f"\n\nðŸ† <b>{sc('TOP USERS:')}</b>{top_str}"
 
         bot.edit_message_text(response, message.chat.id, status_msg.message_id, parse_mode="HTML")
 
@@ -3192,7 +3192,7 @@ def cmd_botstats(message):
             import traceback
             traceback.print_exc()
         try:
-            bot.reply_to(message, f"❌ Error getting stats: {str(e)[:200]}")
+            bot.reply_to(message, f"âŒ Error getting stats: {str(e)[:200]}")
         except Exception:
             pass
 
@@ -3202,12 +3202,12 @@ def cmd_botstats(message):
 def cmd_mongocheck(message):
     """Verify MongoDB connectivity and data integrity (owner only)."""
     _log_cmd(message, "/mongocheck")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
 
     sc = _to_bold_sans
-    lines = [f"🔍 <b>{sc('MONGODB HEALTH CHECK')}</b>\n"]
+    lines = [f"ðŸ” <b>{sc('MONGODB HEALTH CHECK')}</b>\n"]
 
     # 1) Connection test
     db, chats_coll = _get_mongo()
@@ -3215,17 +3215,17 @@ def cmd_mongocheck(message):
     codes_col = _codes_coll()
 
     if db is None:
-        bot.reply_to(message, "❌ <b>MongoDB NOT connected.</b>\nCheck SHIRO_MONGO_URI in .env", parse_mode="HTML")
+        bot.reply_to(message, "âŒ <b>MongoDB NOT connected.</b>\nCheck SHIRO_MONGO_URI in .env", parse_mode="HTML")
         return
 
-    lines.append(f"✅ <b>{sc('CONNECTION:')}</b> {sc('OK')}\n")
+    lines.append(f"âœ… <b>{sc('CONNECTION:')}</b> {sc('OK')}\n")
 
     # 2) Collections check
     try:
         db_collections = db.list_collection_names()
-        lines.append(f"📂 <b>{sc('COLLECTIONS:')}</b> {', '.join(db_collections)}\n")
+        lines.append(f"ðŸ“‚ <b>{sc('COLLECTIONS:')}</b> {', '.join(db_collections)}\n")
     except Exception as e:
-        lines.append(f"⚠️ <b>{sc('COLLECTIONS:')}</b> Error: {str(e)[:60]}\n")
+        lines.append(f"âš ï¸ <b>{sc('COLLECTIONS:')}</b> Error: {str(e)[:60]}\n")
 
     # 3) Users collection
     if users_coll is not None:
@@ -3236,22 +3236,22 @@ def cmd_mongocheck(message):
             with_activity = users_coll.count_documents({"last_active": {"$exists": True}})
             with_checks = users_coll.count_documents({"total_checks": {"$gt": 0}})
 
-            lines.append(f"\n👤 <b>{sc('USERS COLLECTION:')}</b>")
-            lines.append(f"  ▸ {sc('TOTAL DOCS:')} {total_users}")
-            lines.append(f"  ▸ {sc('VALID TELEGRAM IDS:')} {valid_users}")
-            lines.append(f"  ▸ {sc('WITH USERNAME:')} {with_username}")
-            lines.append(f"  ▸ {sc('WITH LAST_ACTIVE:')} {with_activity}")
-            lines.append(f"  ▸ {sc('WITH CHECKS > 0:')} {with_checks}")
+            lines.append(f"\nðŸ‘¤ <b>{sc('USERS COLLECTION:')}</b>")
+            lines.append(f"  â–¸ {sc('TOTAL DOCS:')} {total_users}")
+            lines.append(f"  â–¸ {sc('VALID TELEGRAM IDS:')} {valid_users}")
+            lines.append(f"  â–¸ {sc('WITH USERNAME:')} {with_username}")
+            lines.append(f"  â–¸ {sc('WITH LAST_ACTIVE:')} {with_activity}")
+            lines.append(f"  â–¸ {sc('WITH CHECKS > 0:')} {with_checks}")
 
             # Sample a user doc to show structure
             sample = users_coll.find_one({"_id": {"$type": ["int", "long"]}})
             if sample:
                 keys = sorted(sample.keys())
-                lines.append(f"  ▸ {sc('DOC FIELDS:')} {', '.join(keys)}")
+                lines.append(f"  â–¸ {sc('DOC FIELDS:')} {', '.join(keys)}")
         except Exception as e:
-            lines.append(f"⚠️ Users error: {str(e)[:80]}")
+            lines.append(f"âš ï¸ Users error: {str(e)[:80]}")
     else:
-        lines.append(f"❌ <b>{sc('USERS:')}</b> Collection not found")
+        lines.append(f"âŒ <b>{sc('USERS:')}</b> Collection not found")
 
     # 4) Chats collection
     if chats_coll is not None:
@@ -3259,29 +3259,29 @@ def cmd_mongocheck(message):
             total_chats = chats_coll.count_documents({})
             with_sites = chats_coll.count_documents({"sites": {"$exists": True, "$ne": []}})
             with_proxies = chats_coll.count_documents({"proxies": {"$exists": True, "$ne": []}})
-            lines.append(f"\n💬 <b>{sc('CHATS COLLECTION:')}</b>")
-            lines.append(f"  ▸ {sc('TOTAL:')} {total_chats}")
-            lines.append(f"  ▸ {sc('WITH SITES:')} {with_sites}")
-            lines.append(f"  ▸ {sc('WITH PROXIES:')} {with_proxies}")
+            lines.append(f"\nðŸ’¬ <b>{sc('CHATS COLLECTION:')}</b>")
+            lines.append(f"  â–¸ {sc('TOTAL:')} {total_chats}")
+            lines.append(f"  â–¸ {sc('WITH SITES:')} {with_sites}")
+            lines.append(f"  â–¸ {sc('WITH PROXIES:')} {with_proxies}")
         except Exception as e:
-            lines.append(f"⚠️ Chats error: {str(e)[:80]}")
+            lines.append(f"âš ï¸ Chats error: {str(e)[:80]}")
 
     # 5) Codes collection
     if codes_col is not None:
         try:
             total_codes = codes_col.count_documents({})
             unused_codes = codes_col.count_documents({"used_count": {"$lt": 1}})
-            lines.append(f"\n🎟️ <b>{sc('CODES COLLECTION:')}</b>")
-            lines.append(f"  ▸ {sc('TOTAL:')} {total_codes}")
-            lines.append(f"  ▸ {sc('UNUSED:')} {unused_codes}")
+            lines.append(f"\nðŸŽŸï¸ <b>{sc('CODES COLLECTION:')}</b>")
+            lines.append(f"  â–¸ {sc('TOTAL:')} {total_codes}")
+            lines.append(f"  â–¸ {sc('UNUSED:')} {unused_codes}")
         except Exception:
             pass
 
     # 6) In-memory state
-    lines.append(f"\n🧠 <b>{sc('IN-MEMORY STATE:')}</b>")
-    lines.append(f"  ▸ {sc('CACHED USERS:')} {len(_user_cache)}")
-    lines.append(f"  ▸ {sc('SITES LOADED:')} {sum(1 for v in user_sites.values() if v)}")
-    lines.append(f"  ▸ {sc('PROXIES LOADED:')} {sum(1 for v in user_proxies.values() if v)}")
+    lines.append(f"\nðŸ§  <b>{sc('IN-MEMORY STATE:')}</b>")
+    lines.append(f"  â–¸ {sc('CACHED USERS:')} {len(_user_cache)}")
+    lines.append(f"  â–¸ {sc('SITES LOADED:')} {sum(1 for v in user_sites.values() if v)}")
+    lines.append(f"  â–¸ {sc('PROXIES LOADED:')} {sum(1 for v in user_proxies.values() if v)}")
 
     # 7) Write test
     try:
@@ -3289,9 +3289,9 @@ def cmd_mongocheck(message):
         test_coll = db.get_collection("_health_check", write_concern=WriteConcern(w=1))
         test_coll.update_one({"_id": "ping"}, {"$set": {"ts": datetime.now(timezone.utc).isoformat()}}, upsert=True)
         test_coll.delete_one({"_id": "ping"})
-        lines.append(f"\n✅ <b>{sc('WRITE TEST:')}</b> {sc('OK')}")
+        lines.append(f"\nâœ… <b>{sc('WRITE TEST:')}</b> {sc('OK')}")
     except Exception as e:
-        lines.append(f"\n❌ <b>{sc('WRITE TEST:')}</b> FAILED — {str(e)[:60]}")
+        lines.append(f"\nâŒ <b>{sc('WRITE TEST:')}</b> FAILED â€” {str(e)[:60]}")
 
     bot.reply_to(message, "\n".join(lines), parse_mode="HTML")
 
@@ -3301,7 +3301,7 @@ def cmd_mongocheck(message):
 def cmd_addcredits(message):
     """Add credits to a user (owner only). Usage: /addcredits <user_id> <amount>"""
     _log_cmd(message, "/addcredits", extra=(message.text or "").strip())
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
@@ -3321,23 +3321,23 @@ def cmd_addcredits(message):
         target_user_id = int(parts[1])
         amount = int(parts[2])
     except ValueError:
-        bot.reply_to(message, "❌ Invalid user_id or amount. Both must be numbers.")
+        bot.reply_to(message, "âŒ Invalid user_id or amount. Both must be numbers.")
         return
     
     if amount <= 0:
-        bot.reply_to(message, "❌ Amount must be positive.")
+        bot.reply_to(message, "âŒ Amount must be positive.")
         return
     
     coll = _users_coll()
     if coll is None:
-        bot.reply_to(message, "❌ Database not connected.")
+        bot.reply_to(message, "âŒ Database not connected.")
         return
     
     try:
         # Check if user exists
         user_doc = coll.find_one({"_id": target_user_id})
         if not user_doc:
-            bot.reply_to(message, f"❌ User {target_user_id} not found. They need to /register first.")
+            bot.reply_to(message, f"âŒ User {target_user_id} not found. They need to /register first.")
             return
         
         # Add credits
@@ -3350,10 +3350,10 @@ def cmd_addcredits(message):
             _invalidate_user_cache(target_user_id)
             new_balance = coll.find_one({"_id": target_user_id})["credits"]
             if DEBUG:
-                print(f"[Mongo] ✅ Added {amount} credits to user {target_user_id}, new balance: {new_balance}")
+                print(f"[Mongo] âœ… Added {amount} credits to user {target_user_id}, new balance: {new_balance}")
             bot.reply_to(
                 message,
-                f"✅ Added {amount} credits to user {target_user_id}\n"
+                f"âœ… Added {amount} credits to user {target_user_id}\n"
                 f"New balance: {new_balance} credits"
             )
             
@@ -3361,16 +3361,16 @@ def cmd_addcredits(message):
             try:
                 bot.send_message(
                     target_user_id,
-                    f"🎁 You received {amount} credits!\n"
+                    f"ðŸŽ You received {amount} credits!\n"
                     f"Your new balance: {new_balance} credits"
                 )
             except Exception:
                 pass  # User might have blocked the bot
         else:
-            bot.reply_to(message, "❌ Failed to add credits.")
+            bot.reply_to(message, "âŒ Failed to add credits.")
             
     except Exception as e:
-        bot.reply_to(message, f"❌ Error: {str(e)[:200]}")
+        bot.reply_to(message, f"âŒ Error: {str(e)[:200]}")
 
 
 @bot.message_handler(commands=["gencode"])
@@ -3378,7 +3378,7 @@ def cmd_addcredits(message):
 def cmd_gencode(message):
     """Generate credit codes (owner only). Usage: /gencode <credits> [count]"""
     _log_cmd(message, "/gencode", extra=(message.text or "").strip())
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
@@ -3387,13 +3387,13 @@ def cmd_gencode(message):
     
     if len(parts) < 2:
         usage_msg = (
-            "📝 " + _to_bold_sans("USAGE:") + " <code>/gencode &lt;credits&gt; [count]</code>\n\n"
-            "💡 " + _to_bold_sans("EXAMPLES:") + "\n"
-            "▸ <code>/gencode 100</code>\n"
+            "ðŸ“ " + _to_bold_sans("USAGE:") + " <code>/gencode &lt;credits&gt; [count]</code>\n\n"
+            "ðŸ’¡ " + _to_bold_sans("EXAMPLES:") + "\n"
+            "â–¸ <code>/gencode 100</code>\n"
             "  " + _to_bold_sans("CREATES 1 CODE WITH 100 CREDITS") + "\n\n"
-            "▸ <code>/gencode 50 10</code>\n"
+            "â–¸ <code>/gencode 50 10</code>\n"
             "  " + _to_bold_sans("CREATES 10 CODES, EACH WITH 50 CREDITS") + "\n\n"
-            "🎯 " + _to_bold_sans("DEFAULT COUNT:") + " 1"
+            "ðŸŽ¯ " + _to_bold_sans("DEFAULT COUNT:") + " 1"
         )
         bot.reply_to(message, usage_msg, parse_mode="HTML")
         return
@@ -3402,14 +3402,14 @@ def cmd_gencode(message):
         credits = int(parts[1])
         count = int(parts[2]) if len(parts) > 2 else 1
     except ValueError:
-        bot.reply_to(message, "❌ Invalid credits or count. Both must be numbers.")
+        bot.reply_to(message, "âŒ Invalid credits or count. Both must be numbers.")
         return
     
     if credits <= 0 or count <= 0:
-        bot.reply_to(message, "❌ Credits and count must be positive.")
+        bot.reply_to(message, "âŒ Credits and count must be positive.")
         return
     if count > 50:
-        bot.reply_to(message, "❌ Max 50 codes at once.")
+        bot.reply_to(message, "âŒ Max 50 codes at once.")
         return
     
     codes = []
@@ -3419,34 +3419,34 @@ def cmd_gencode(message):
             codes.append(code)
     
     if not codes:
-        bot.reply_to(message, "❌ Failed to generate codes. Database error.")
+        bot.reply_to(message, "âŒ Failed to generate codes. Database error.")
         return
     
     if len(codes) == 1:
         sc = _to_bold_sans
-        gen_msg  = f"┌─────────────────────────┐\n"
-        gen_msg += f"   🎟️ <b>{sc('CODE GENERATED')}</b> 🎟️\n"
-        gen_msg += f"└─────────────────────────┘\n\n"
-        gen_msg += f"  ▸ <b>{sc('CODE')}</b>       ➜  <code>{codes[0]}</code>\n"
-        gen_msg += f"  ▸ <b>{sc('CREDITS')}</b>    ➜  <b>{credits}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('TYPE')}</b>       ➜  {sc('SINGLE-USE')}\n\n"
-        gen_msg += f"  📋 <b>{sc('REDEEM:')}</b>\n"
+        gen_msg  = f"â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”\n"
+        gen_msg += f"   ðŸŽŸï¸ <b>{sc('CODE GENERATED')}</b> ðŸŽŸï¸\n"
+        gen_msg += f"â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜\n\n"
+        gen_msg += f"  â–¸ <b>{sc('CODE')}</b>       âžœ  <code>{codes[0]}</code>\n"
+        gen_msg += f"  â–¸ <b>{sc('CREDITS')}</b>    âžœ  <b>{credits}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('TYPE')}</b>       âžœ  {sc('SINGLE-USE')}\n\n"
+        gen_msg += f"  ðŸ“‹ <b>{sc('REDEEM:')}</b>\n"
         gen_msg += f"  <code>/redeem {codes[0]}</code>\n\n"
-        gen_msg += f"  💡 {sc('SHARE THIS CODE WITH USERS')}"
+        gen_msg += f"  ðŸ’¡ {sc('SHARE THIS CODE WITH USERS')}"
     else:
         sc = _to_bold_sans
         total_credits = credits * len(codes)
-        code_lines = "\n".join(f"  ▸ <code>{c}</code>" for c in codes)
-        gen_msg  = f"┌─────────────────────────┐\n"
-        gen_msg += f"   🎟️ <b>{sc('CODES GENERATED')}</b> 🎟️\n"
-        gen_msg += f"└─────────────────────────┘\n\n"
-        gen_msg += f"  ▸ <b>{sc('CREDITS EACH')}</b>  ➜  <b>{credits}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('QUANTITY')}</b>      ➜  <b>{len(codes)}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('TOTAL VALUE')}</b>   ➜  <b>{total_credits}</b> {sc('CREDITS')}\n"
-        gen_msg += f"  ▸ <b>{sc('TYPE')}</b>          ➜  {sc('SINGLE-USE')}\n\n"
-        gen_msg += f"  📦 <b>{sc('CODES:')}</b>\n"
+        code_lines = "\n".join(f"  â–¸ <code>{c}</code>" for c in codes)
+        gen_msg  = f"â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”\n"
+        gen_msg += f"   ðŸŽŸï¸ <b>{sc('CODES GENERATED')}</b> ðŸŽŸï¸\n"
+        gen_msg += f"â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜\n\n"
+        gen_msg += f"  â–¸ <b>{sc('CREDITS EACH')}</b>  âžœ  <b>{credits}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('QUANTITY')}</b>      âžœ  <b>{len(codes)}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('TOTAL VALUE')}</b>   âžœ  <b>{total_credits}</b> {sc('CREDITS')}\n"
+        gen_msg += f"  â–¸ <b>{sc('TYPE')}</b>          âžœ  {sc('SINGLE-USE')}\n\n"
+        gen_msg += f"  ðŸ“¦ <b>{sc('CODES:')}</b>\n"
         gen_msg += f"{code_lines}\n\n"
-        gen_msg += f"  💡 {sc('USE')} <code>/redeem &lt;CODE&gt;</code> {sc('TO CLAIM')}"
+        gen_msg += f"  ðŸ’¡ {sc('USE')} <code>/redeem &lt;CODE&gt;</code> {sc('TO CLAIM')}"
     bot.reply_to(message, gen_msg, parse_mode="HTML")
 
 
@@ -3455,7 +3455,7 @@ def cmd_gencode(message):
 def cmd_gen(message):
     """Generate plan codes (owner only). Usage: /gen <basic|pro> [duration] [count]"""
     _log_cmd(message, "/gen", extra=(message.text or "").strip())
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
 
@@ -3465,15 +3465,15 @@ def cmd_gen(message):
 
     if len(parts) < 2 or parts[1].lower() not in PLANS:
         usage_msg = (
-            "📝 " + sc("USAGE:") + " <code>/gen &lt;basic|pro&gt; [duration] [count]</code>\n\n"
-            "💡 " + sc("EXAMPLES:") + "\n"
-            "▸ <code>/gen basic</code> — " + sc("1 CODE, 7 DAYS") + "\n"
-            "▸ <code>/gen pro</code> — " + sc("1 CODE, 30 DAYS") + "\n"
-            "▸ <code>/gen basic 3d</code> — " + sc("3 DAYS") + "\n"
-            "▸ <code>/gen pro 1w 5</code> — " + sc("5 CODES, 1 WEEK EACH") + "\n"
-            "▸ <code>/gen basic 12h</code> — " + sc("12 HOURS") + "\n"
-            "▸ <code>/gen pro 1d12h 3</code> — " + sc("3 CODES, 1.5 DAYS") + "\n\n"
-            "⏱ " + sc("DURATION: 1w 1d 1h 1m (DEFAULT: PLAN DEFAULT)")
+            "ðŸ“ " + sc("USAGE:") + " <code>/gen &lt;basic|pro&gt; [duration] [count]</code>\n\n"
+            "ðŸ’¡ " + sc("EXAMPLES:") + "\n"
+            "â–¸ <code>/gen basic</code> â€” " + sc("1 CODE, 7 DAYS") + "\n"
+            "â–¸ <code>/gen pro</code> â€” " + sc("1 CODE, 30 DAYS") + "\n"
+            "â–¸ <code>/gen basic 3d</code> â€” " + sc("3 DAYS") + "\n"
+            "â–¸ <code>/gen pro 1w 5</code> â€” " + sc("5 CODES, 1 WEEK EACH") + "\n"
+            "â–¸ <code>/gen basic 12h</code> â€” " + sc("12 HOURS") + "\n"
+            "â–¸ <code>/gen pro 1d12h 3</code> â€” " + sc("3 CODES, 1.5 DAYS") + "\n\n"
+            "â± " + sc("DURATION: 1w 1d 1h 1m (DEFAULT: PLAN DEFAULT)")
         )
         bot.reply_to(message, usage_msg, parse_mode="HTML")
         return
@@ -3494,7 +3494,7 @@ def cmd_gen(message):
         else:
             duration_minutes = _parse_duration(duration_str)
             if duration_minutes == 0:
-                bot.reply_to(message, "❌ Invalid duration. Use: <code>1w</code>, <code>3d</code>, <code>12h</code>, <code>30m</code>, <code>1d12h</code>", parse_mode="HTML")
+                bot.reply_to(message, "âŒ Invalid duration. Use: <code>1w</code>, <code>3d</code>, <code>12h</code>, <code>30m</code>, <code>1d12h</code>", parse_mode="HTML")
                 return
     else:
         duration_minutes = default_days * 24 * 60
@@ -3505,18 +3505,18 @@ def cmd_gen(message):
         try:
             count = int(count_str)
         except ValueError:
-            bot.reply_to(message, "❌ Count must be a number.")
+            bot.reply_to(message, "âŒ Count must be a number.")
             return
     # If only 2 args and second is a number, could be count with default duration
     elif duration_str and duration_str.isdigit() and int(duration_str) > 365:
-        # Probably meant count, not days — but keep as days for safety
+        # Probably meant count, not days â€” but keep as days for safety
         pass
 
     if duration_minutes <= 0 or count <= 0:
-        bot.reply_to(message, "❌ Duration and count must be positive.")
+        bot.reply_to(message, "âŒ Duration and count must be positive.")
         return
     if count > 20:
-        bot.reply_to(message, "❌ Max 20 plan codes at once.")
+        bot.reply_to(message, "âŒ Max 20 plan codes at once.")
         return
 
     # Format duration for display
@@ -3536,7 +3536,7 @@ def cmd_gen(message):
 
     codes_col = _codes_coll()
     if codes_col is None:
-        bot.reply_to(message, "❌ Database error.")
+        bot.reply_to(message, "âŒ Database error.")
         return
 
     codes = []
@@ -3557,27 +3557,27 @@ def cmd_gen(message):
         codes.append(code)
 
     if len(codes) == 1:
-        gen_msg  = f"┌─────────────────────────┐\n"
-        gen_msg += f"   💎 <b>{sc('PLAN CODE GENERATED')}</b> 💎\n"
-        gen_msg += f"└─────────────────────────┘\n\n"
-        gen_msg += f"  ▸ <b>{sc('CODE')}</b>     ➜  <code>{codes[0]}</code>\n"
-        gen_msg += f"  ▸ <b>{sc('PLAN')}</b>     ➜  <b>{plan_info['name']}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('DURATION')}</b> ➜  <b>{dur_display}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('TYPE')}</b>     ➜  {sc('SINGLE-USE')}\n\n"
-        gen_msg += f"  📋 <b>{sc('REDEEM:')}</b>\n"
+        gen_msg  = f"â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”\n"
+        gen_msg += f"   ðŸ’Ž <b>{sc('PLAN CODE GENERATED')}</b> ðŸ’Ž\n"
+        gen_msg += f"â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜\n\n"
+        gen_msg += f"  â–¸ <b>{sc('CODE')}</b>     âžœ  <code>{codes[0]}</code>\n"
+        gen_msg += f"  â–¸ <b>{sc('PLAN')}</b>     âžœ  <b>{plan_info['name']}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('DURATION')}</b> âžœ  <b>{dur_display}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('TYPE')}</b>     âžœ  {sc('SINGLE-USE')}\n\n"
+        gen_msg += f"  ðŸ“‹ <b>{sc('REDEEM:')}</b>\n"
         gen_msg += f"  <code>/redeem {codes[0]}</code>"
     else:
-        code_lines = "\n".join(f"  ▸ <code>{c}</code>" for c in codes)
-        gen_msg  = f"┌─────────────────────────┐\n"
-        gen_msg += f"   💎 <b>{sc('PLAN CODES GENERATED')}</b> 💎\n"
-        gen_msg += f"└─────────────────────────┘\n\n"
-        gen_msg += f"  ▸ <b>{sc('PLAN')}</b>     ➜  <b>{plan_info['name']}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('DURATION')}</b> ➜  <b>{dur_display}</b> {sc('EACH')}\n"
-        gen_msg += f"  ▸ <b>{sc('QUANTITY')}</b> ➜  <b>{len(codes)}</b>\n"
-        gen_msg += f"  ▸ <b>{sc('TYPE')}</b>     ➜  {sc('SINGLE-USE')}\n\n"
-        gen_msg += f"  📦 <b>{sc('CODES:')}</b>\n"
+        code_lines = "\n".join(f"  â–¸ <code>{c}</code>" for c in codes)
+        gen_msg  = f"â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”\n"
+        gen_msg += f"   ðŸ’Ž <b>{sc('PLAN CODES GENERATED')}</b> ðŸ’Ž\n"
+        gen_msg += f"â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜\n\n"
+        gen_msg += f"  â–¸ <b>{sc('PLAN')}</b>     âžœ  <b>{plan_info['name']}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('DURATION')}</b> âžœ  <b>{dur_display}</b> {sc('EACH')}\n"
+        gen_msg += f"  â–¸ <b>{sc('QUANTITY')}</b> âžœ  <b>{len(codes)}</b>\n"
+        gen_msg += f"  â–¸ <b>{sc('TYPE')}</b>     âžœ  {sc('SINGLE-USE')}\n\n"
+        gen_msg += f"  ðŸ“¦ <b>{sc('CODES:')}</b>\n"
         gen_msg += f"{code_lines}\n\n"
-        gen_msg += f"  💡 {sc('USE')} <code>/redeem &lt;CODE&gt;</code> {sc('TO ACTIVATE')}"
+        gen_msg += f"  ðŸ’¡ {sc('USE')} <code>/redeem &lt;CODE&gt;</code> {sc('TO ACTIVATE')}"
     bot.reply_to(message, gen_msg, parse_mode="HTML")
 
 
@@ -3589,9 +3589,9 @@ def cmd_redeem(message):
     uid = getattr(message.from_user, "id", None)
     if not uid or not is_registered(uid):
         register_msg = (
-            "⚠️ " + _to_bold_sans("REGISTRATION REQUIRED") + "\n\n"
-            "📝 " + _to_bold_sans("USE") + " /register " + _to_bold_sans("TO GET STARTED") + "\n"
-            "💡 " + _to_bold_sans("OR PRESS REGISTER ON") + " /start"
+            "âš ï¸ " + _to_bold_sans("REGISTRATION REQUIRED") + "\n\n"
+            "ðŸ“ " + _to_bold_sans("USE") + " /register " + _to_bold_sans("TO GET STARTED") + "\n"
+            "ðŸ’¡ " + _to_bold_sans("OR PRESS REGISTER ON") + " /start"
         )
         bot.reply_to(message, register_msg, parse_mode="HTML")
         return
@@ -3601,10 +3601,10 @@ def cmd_redeem(message):
     
     if len(parts) != 2:
         usage_msg = (
-            "📝 " + _to_bold_sans("USAGE:") + " <code>/redeem &lt;code&gt;</code>\n\n"
-            "💡 " + _to_bold_sans("EXAMPLE:") + "\n"
-            "▸ <code>/redeem ABC123XYZ456</code>\n\n"
-            "🎟️ " + _to_bold_sans("GET CODES FROM THE BOT OWNER")
+            "ðŸ“ " + _to_bold_sans("USAGE:") + " <code>/redeem &lt;code&gt;</code>\n\n"
+            "ðŸ’¡ " + _to_bold_sans("EXAMPLE:") + "\n"
+            "â–¸ <code>/redeem ABC123XYZ456</code>\n\n"
+            "ðŸŽŸï¸ " + _to_bold_sans("GET CODES FROM THE BOT OWNER")
         )
         bot.reply_to(message, usage_msg, parse_mode="HTML")
         return
@@ -3632,35 +3632,35 @@ def cmd_redeem(message):
                 if m: dur_parts.append(f"{m} " + sc("MIN"))
             dur_display = " ".join(dur_parts) or sc("INSTANT")
             redeem_msg = (
-                "🎉 " + sc("PLAN ACTIVATED") + " 🎉\n\n"
-                "💎 " + sc("PLAN:") + f" <b>{plan_name}</b>\n"
-                "⏱ " + sc("DURATION:") + f" <b>{dur_display}</b>\n"
-                "♾ " + sc("CREDITS:") + " <b>" + sc("UNLIMITED") + "</b>\n\n"
-                "✨ " + sc("ENJOY UNLIMITED CHECKS!")
+                "ðŸŽ‰ " + sc("PLAN ACTIVATED") + " ðŸŽ‰\n\n"
+                "ðŸ’Ž " + sc("PLAN:") + f" <b>{plan_name}</b>\n"
+                "â± " + sc("DURATION:") + f" <b>{dur_display}</b>\n"
+                "â™¾ " + sc("CREDITS:") + " <b>" + sc("UNLIMITED") + "</b>\n\n"
+                "âœ¨ " + sc("ENJOY UNLIMITED CHECKS!")
             )
         else:
             new_balance = get_credits(uid)
             redeem_msg = (
-                "🎉 " + sc("CODE REDEEMED SUCCESSFULLY") + " 🎉\n\n"
-                "💳 " + sc("CREDITS ADDED:") + f" <b>+{credits}</b>\n"
-                "💰 " + sc("NEW BALANCE:") + f" <b>{new_balance}</b>\n\n"
-                "✨ " + sc("READY TO CHECK CARDS!") + "\n"
-                "▸ " + sc("USE") + " /sh " + sc("FOR SINGLE CHECK") + "\n"
-                "▸ " + sc("USE") + " /msh " + sc("FOR MASS CHECK")
+                "ðŸŽ‰ " + sc("CODE REDEEMED SUCCESSFULLY") + " ðŸŽ‰\n\n"
+                "ðŸ’³ " + sc("CREDITS ADDED:") + f" <b>+{credits}</b>\n"
+                "ðŸ’° " + sc("NEW BALANCE:") + f" <b>{new_balance}</b>\n\n"
+                "âœ¨ " + sc("READY TO CHECK CARDS!") + "\n"
+                "â–¸ " + sc("USE") + " /sh " + sc("FOR SINGLE CHECK") + "\n"
+                "â–¸ " + sc("USE") + " /msh " + sc("FOR MASS CHECK")
             )
         bot.reply_to(message, redeem_msg, parse_mode="HTML")
     else:
         # Enhanced error messages with proper formatting
         if "already redeemed" in msg.lower():
-            error_msg = "❌ " + _to_bold_sans("CODE ALREADY REDEEMED") + "\n\n" + _to_bold_sans("YOU HAVE ALREADY USED THIS CODE")
+            error_msg = "âŒ " + _to_bold_sans("CODE ALREADY REDEEMED") + "\n\n" + _to_bold_sans("YOU HAVE ALREADY USED THIS CODE")
         elif "expired" in msg.lower():
-            error_msg = "❌ " + _to_bold_sans("CODE EXPIRED") + "\n\n" + _to_bold_sans("THIS CODE HAS REACHED MAX USES")
+            error_msg = "âŒ " + _to_bold_sans("CODE EXPIRED") + "\n\n" + _to_bold_sans("THIS CODE HAS REACHED MAX USES")
         elif "invalid" in msg.lower():
-            error_msg = "❌ " + _to_bold_sans("INVALID CODE") + "\n\n" + _to_bold_sans("CODE NOT FOUND OR INCORRECT")
+            error_msg = "âŒ " + _to_bold_sans("INVALID CODE") + "\n\n" + _to_bold_sans("CODE NOT FOUND OR INCORRECT")
         elif "not found" in msg.lower():
-            error_msg = "❌ " + _to_bold_sans("USER NOT FOUND") + "\n\n" + _to_bold_sans("PLEASE CONTACT SUPPORT")
+            error_msg = "âŒ " + _to_bold_sans("USER NOT FOUND") + "\n\n" + _to_bold_sans("PLEASE CONTACT SUPPORT")
         else:
-            error_msg = "❌ " + _to_bold_sans("ERROR") + "\n\n" + _to_bold_sans(msg.upper())
+            error_msg = "âŒ " + _to_bold_sans("ERROR") + "\n\n" + _to_bold_sans(msg.upper())
         bot.reply_to(message, error_msg, parse_mode="HTML")
 
 
@@ -3669,7 +3669,7 @@ def cmd_redeem(message):
 def cmd_listcodes(message):
     """List all credit codes (owner only)."""
     _log_cmd(message, "/listcodes")
-    if not OWNER_ID or getattr(message.from_user, "id", None) != OWNER_ID:
+    if not OWNER_IDS or getattr(message.from_user, "id", None) not in OWNER_IDS:
         bot.reply_to(message, "Owner only.")
         return
     
@@ -3684,10 +3684,10 @@ def cmd_listcodes(message):
         credits = code_doc.get("credits", 0)
         max_uses = code_doc.get("max_uses", 1)
         used_count = code_doc.get("used_count", 0)
-        status = "✅ Active" if used_count < max_uses else "❌ Expired"
+        status = "âœ… Active" if used_count < max_uses else "âŒ Expired"
         
         msg += f"<code>{code}</code>\n"
-        msg += f"  {credits} credits • {used_count}/{max_uses} uses • {status}\n\n"
+        msg += f"  {credits} credits â€¢ {used_count}/{max_uses} uses â€¢ {status}\n\n"
     
     bot.reply_to(message, msg, parse_mode="HTML")
 
@@ -3701,14 +3701,14 @@ def cmd_setsite(message):
     rest = text.replace("/setsite", "").strip()
     if rest:
         lines = [x.strip() for x in rest.split("\n") if x.strip()]
-        status_msg = bot.reply_to(message, "🔍 Testing sites... (0/?)")
+        status_msg = bot.reply_to(message, "ðŸ” Testing sites... (0/?)")
         working, dead = _test_and_save_sites(cid, lines, status_msg)
         if working:
-            out = f"✅ Saved <b>{len(working)}</b> working site(s) with lowest products."
+            out = f"âœ… Saved <b>{len(working)}</b> working site(s) with lowest products."
         else:
-            out = "❌ No working sites found."
+            out = "âŒ No working sites found."
         if dead:
-            out += f"\n❌ {len(dead)} failed: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
+            out += f"\nâŒ {len(dead)} failed: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
             if len(dead) > 5:
                 out += f" +{len(dead)-5} more"
         bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
@@ -3740,7 +3740,7 @@ def _test_and_save_bt_sites(cid, raw_lines, status_msg=None):
 
     if status_msg:
         try:
-            bot.edit_message_text(f"🔍 Testing {len(sites_to_test)} site(s) for Braintree gateway...", cid, status_msg.message_id)
+            bot.edit_message_text(f"ðŸ” Testing {len(sites_to_test)} site(s) for Braintree gateway...", cid, status_msg.message_id)
         except Exception:
             pass
 
@@ -3780,14 +3780,14 @@ def cmd_btsite(message):
     rest = text.replace("/btsite", "").strip()
     if rest:
         lines = [x.strip() for x in rest.split("\n") if x.strip()]
-        status_msg = bot.reply_to(message, "🔍 Testing BT sites...")
+        status_msg = bot.reply_to(message, "ðŸ” Testing BT sites...")
         working, dead = _test_and_save_bt_sites(cid, lines, status_msg)
         if working:
-            out = f"✅ Saved <b>{len(working)}</b> working Braintree site(s)."
+            out = f"âœ… Saved <b>{len(working)}</b> working Braintree site(s)."
         else:
-            out = "❌ No working Braintree sites found."
+            out = "âŒ No working Braintree sites found."
         if dead:
-            out += f"\n❌ {len(dead)} failed: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
+            out += f"\nâŒ {len(dead)} failed: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
             if len(dead) > 5:
                 out += f" +{len(dead)-5} more"
         bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
@@ -3806,18 +3806,18 @@ def _bt_sites_list_message(cid, with_remove_buttons=True):
     """Build BT sites list text and optional inline keyboard."""
     sites = get_bt_sites(cid)
     if not sites:
-        return "🔷 <b>BT Sites</b>\n━━━━━━━━━━━━━━━━━\n\nNo BT sites added yet.\nUse <code>/btsite</code> to add.", None
+        return "ðŸ”· <b>BT Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo BT sites added yet.\nUse <code>/btsite</code> to add.", None
     lines = []
     for i, s in enumerate(sites):
         domain = s.replace("https://", "").replace("http://", "").split("/")[0]
         lines.append(f"{i+1}. <code>{domain}</code>")
-    text = f"🔷 <b>BT Sites</b> ({len(sites)})\n━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines)
+    text = f"ðŸ”· <b>BT Sites</b> ({len(sites)})\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n" + "\n".join(lines)
     if not with_remove_buttons:
         return text, None
     kb = types.InlineKeyboardMarkup()
     for i in range(0, len(sites), 4):
-        kb.row(*[types.InlineKeyboardButton(f"🗑 {i+j+1}", callback_data=f"rbs_{i+j}") for j in range(4) if i+j < len(sites)])
-    kb.add(types.InlineKeyboardButton("🗑 Remove All BT Sites", callback_data="rbs_all_confirm"))
+        kb.row(*[types.InlineKeyboardButton(f"ðŸ—‘ {i+j+1}", callback_data=f"rbs_{i+j}") for j in range(4) if i+j < len(sites)])
+    kb.add(types.InlineKeyboardButton("ðŸ—‘ Remove All BT Sites", callback_data="rbs_all_confirm"))
     return text, kb
 
 
@@ -3835,7 +3835,7 @@ def cmd_btsitelist(message):
 
 def _test_and_save_proxies(cid, raw_lines, status_msg=None):
     """Parse proxy lines to URLs and save them directly (no connectivity test).
-    Returns (saved_urls, 0) — all valid-format proxies are saved."""
+    Returns (saved_urls, 0) â€” all valid-format proxies are saved."""
     proxy_urls = _parse_proxy_lines_to_urls(raw_lines)
     if not proxy_urls:
         return [], 0
@@ -3852,18 +3852,18 @@ def cmd_setproxies(message):
     rest = text.replace("/setproxies", "").strip()
     if rest:
         lines = [x.strip() for x in rest.replace(",", "\n").split("\n") if x.strip()]
-        status_msg = bot.reply_to(message, "🔍 Testing proxies... (0/?)")
+        status_msg = bot.reply_to(message, "ðŸ” Testing proxies... (0/?)")
         working, failed = _test_and_save_proxies(cid, lines, status_msg)
         sc = _to_bold_sans
         proxy_lines = [f"  <code>{_proxy_display_name(p)}</code>" for p in working[:15]]
         if len(working) > 15:
             proxy_lines.append(f"  ... +{len(working) - 15} more")
-        out  = f"<b>{sc('PROXY SETUP')}</b> 🔗\n"
-        out += "━━━━━━━━━━━━━━━━━\n\n"
-        out += f"▸ <b>{sc('STATUS:')}</b> ✅ {sc('SAVED')}\n"
-        out += f"▸ <b>{sc('WORKING:')}</b> {len(working)}\n"
+        out  = f"<b>{sc('PROXY SETUP')}</b> ðŸ”—\n"
+        out += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+        out += f"â–¸ <b>{sc('STATUS:')}</b> âœ… {sc('SAVED')}\n"
+        out += f"â–¸ <b>{sc('WORKING:')}</b> {len(working)}\n"
         if failed:
-            out += f"▸ <b>{sc('FAILED:')}</b> {failed}\n"
+            out += f"â–¸ <b>{sc('FAILED:')}</b> {failed}\n"
         out += f"\n<b>{sc('PROXIES:')}</b>\n" + "\n".join(proxy_lines)
         bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
         _discord_proxies_set(message, working)
@@ -3881,19 +3881,19 @@ def _sites_list_message(cid, with_remove_buttons=True):
     """Build sites list text and optional inline keyboard (remove by index + remove all)."""
     sites = get_sites(cid)
     if not sites:
-        return "🌐 <b>Sites</b>\n━━━━━━━━━━━━━━━━━\n\nNo sites added yet.\nUse <code>/setsite</code> to add.", None
+        return "ðŸŒ <b>Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo sites added yet.\nUse <code>/setsite</code> to add.", None
     lines = []
     for i, s in enumerate(sites):
         domain = s.replace("https://", "").replace("http://", "").split("/")[0]
         lines.append(f"{i+1}. <code>{domain}</code>")
-    text = f"🌐 <b>Sites</b> ({len(sites)})\n━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines)
+    text = f"ðŸŒ <b>Sites</b> ({len(sites)})\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n" + "\n".join(lines)
     if not with_remove_buttons:
         return text, None
     kb = types.InlineKeyboardMarkup()
     for i in range(0, len(sites), 4):
-        kb.row(*[types.InlineKeyboardButton(f"🗑 {i+j+1}", callback_data=f"rs_{i+j}") for j in range(4) if i+j < len(sites)])
+        kb.row(*[types.InlineKeyboardButton(f"ðŸ—‘ {i+j+1}", callback_data=f"rs_{i+j}") for j in range(4) if i+j < len(sites)])
     # Remove All button
-    kb.add(types.InlineKeyboardButton("🗑 Remove All Sites", callback_data="rs_all_confirm"))
+    kb.add(types.InlineKeyboardButton("ðŸ—‘ Remove All Sites", callback_data="rs_all_confirm"))
     return text, kb
 
 
@@ -3913,16 +3913,16 @@ def _proxies_list_message(cid, with_remove_buttons=True):
     """Build proxies list text and optional inline keyboard (remove by index + remove all)."""
     proxies = get_proxies(cid)
     if not proxies:
-        return "🔄 <b>Proxies</b>\n━━━━━━━━━━━━━━━━━\n\nNo proxies added yet.\nUse <code>/setproxies</code> to add.", None
+        return "ðŸ”„ <b>Proxies</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo proxies added yet.\nUse <code>/setproxies</code> to add.", None
     lines = [f"{i+1}. <code>{_proxy_display_name(p)}</code>" for i, p in enumerate(proxies)]
-    text = f"🔄 <b>Proxies</b> ({len(proxies)})\n━━━━━━━━━━━━━━━━━\n\n" + "\n".join(lines)
+    text = f"ðŸ”„ <b>Proxies</b> ({len(proxies)})\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n" + "\n".join(lines)
     if not with_remove_buttons:
         return text, None
     kb = types.InlineKeyboardMarkup()
     for i in range(0, len(proxies), 4):
-        kb.row(*[types.InlineKeyboardButton(f"🗑 {i+j+1}", callback_data=f"rp_{i+j}") for j in range(4) if i+j < len(proxies)])
+        kb.row(*[types.InlineKeyboardButton(f"ðŸ—‘ {i+j+1}", callback_data=f"rp_{i+j}") for j in range(4) if i+j < len(proxies)])
     # Remove All button
-    kb.add(types.InlineKeyboardButton("🗑 Remove All Proxies", callback_data="rp_all_confirm"))
+    kb.add(types.InlineKeyboardButton("ðŸ—‘ Remove All Proxies", callback_data="rp_all_confirm"))
     return text, kb
 
 
@@ -3945,9 +3945,9 @@ def cmd_checkproxy(message):
     cid = message.chat.id
     proxies = get_proxies(cid)
     if not proxies:
-        bot.reply_to(message, "🔄 No proxies. Use <code>/setproxies</code> to add.", parse_mode="HTML")
+        bot.reply_to(message, "ðŸ”„ No proxies. Use <code>/setproxies</code> to add.", parse_mode="HTML")
         return
-    status_msg = bot.reply_to(message, "🔍 Testing proxies...")
+    status_msg = bot.reply_to(message, "ðŸ” Testing proxies...")
     results = []
     ok = [0]
     _res_lock = threading.Lock()
@@ -3960,13 +3960,13 @@ def cmd_checkproxy(message):
                 if r.status_code == 200:
                     with _res_lock:
                         ok[0] += 1
-                        results.append((i, f"  ✅ {i+1}. {_proxy_display_name(proxy_url)} – OK"))
+                        results.append((i, f"  âœ… {i+1}. {_proxy_display_name(proxy_url)} â€“ OK"))
                 else:
                     with _res_lock:
-                        results.append((i, f"  ❌ {i+1}. {_proxy_display_name(proxy_url)} – HTTP {r.status_code}"))
+                        results.append((i, f"  âŒ {i+1}. {_proxy_display_name(proxy_url)} â€“ HTTP {r.status_code}"))
         except Exception as e:
             with _res_lock:
-                results.append((i, f"  ❌ {i+1}. {_proxy_display_name(proxy_url)} – {str(e)[:30]}"))
+                results.append((i, f"  âŒ {i+1}. {_proxy_display_name(proxy_url)} â€“ {str(e)[:30]}"))
 
     workers = min(5, len(proxies))
     with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="chkprx") as pool:
@@ -4007,54 +4007,54 @@ def handle_callback(callback):
     # Main menu actions (use caption+reply_markup when message is GIF/animation)
     if data == "menu_toolbox":
         text = (
-            "🛠 <b>" + _to_bold_sans("Toolbox") + "</b>\n\n"
-            "💳 <b>" + _to_bold_sans("Shopify") + "</b>\n"
+            "ðŸ›  <b>" + _to_bold_sans("Toolbox") + "</b>\n\n"
+            "ðŸ’³ <b>" + _to_bold_sans("Shopify") + "</b>\n"
             "<code>/sh</code> " + _to_bold_sans("cc|mm|yy|cvv") + "\n"
             "<code>/msh</code> " + _to_bold_sans("(mass, max 500)") + "\n\n"
-            "🔷 <b>" + _to_bold_sans("Braintree") + "</b>\n"
+            "ðŸ”· <b>" + _to_bold_sans("Braintree") + "</b>\n"
             "<code>/bt</code> " + _to_bold_sans("cc|mm|yy|cvv") + "\n"
             "<code>/mbt</code> " + _to_bold_sans("(mass, max 500)") + "\n\n"
-            "⚡ <b>" + _to_bold_sans("Stripe Charge") + "</b>\n"
+            "âš¡ <b>" + _to_bold_sans("Stripe Charge") + "</b>\n"
             "<code>/st</code> " + _to_bold_sans("cc|mm|yy|cvv") + "\n"
             "<code>/mst</code> " + _to_bold_sans("(mass, max 500)") + "\n\n"
-            "🛒 <b>" + _to_bold_sans("Auto-Checkout") + "</b>\n"
+            "ðŸ›’ <b>" + _to_bold_sans("Auto-Checkout") + "</b>\n"
             "<code>/ac</code> " + _to_bold_sans("(stripe checkout link)") + "\n\n"
-            "🎁 <b>" + _to_bold_sans("Credits") + "</b>\n"
+            "ðŸŽ <b>" + _to_bold_sans("Credits") + "</b>\n"
             "<code>/redeem</code> " + _to_bold_sans("code") + "\n\n"
-            "🔧 <b>" + _to_bold_sans("Setup") + "</b>\n"
-            "<code>/setsite</code> · <code>/sitelist</code> · <code>/removesite</code>\n"
-            "<code>/btsite</code> · <code>/btsitelist</code> · <code>/btremovesite</code>\n"
-            "<code>/setproxies</code> · <code>/listproxy</code> · <code>/removeproxy</code>\n"
+            "ðŸ”§ <b>" + _to_bold_sans("Setup") + "</b>\n"
+            "<code>/setsite</code> Â· <code>/sitelist</code> Â· <code>/removesite</code>\n"
+            "<code>/btsite</code> Â· <code>/btsitelist</code> Â· <code>/btremovesite</code>\n"
+            "<code>/setproxies</code> Â· <code>/listproxy</code> Â· <code>/removeproxy</code>\n"
             "<code>/checkproxy</code>\n\n"
-            "🛠 <b>" + _to_bold_sans("Utilities") + "</b>\n"
-            "<code>/bin</code> " + _to_bold_sans("xxxxxx") + " · "
+            "ðŸ›  <b>" + _to_bold_sans("Utilities") + "</b>\n"
+            "<code>/bin</code> " + _to_bold_sans("xxxxxx") + " Â· "
             "<code>/history</code>\n"
-            "<code>/splittxt</code> · <code>/stop</code>\n"
+            "<code>/splittxt</code> Â· <code>/stop</code>\n"
         )
         kb = _make_toolbox_keyboard()
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "menu_ac":
         sc = _to_bold_sans
         text = (
-            "⚡ <b>" + sc("Auto-Checkout") + "</b>\n\n"
+            "âš¡ <b>" + sc("Auto-Checkout") + "</b>\n\n"
             "Paste a Stripe Checkout link and Shiro will\n"
             "auto-checkout your cards through it.\n\n"
-            "▸ <b>" + sc("USAGE:") + "</b>\n"
+            "â–¸ <b>" + sc("USAGE:") + "</b>\n"
             "  1. Send <code>/ac</code>\n"
             "  2. Paste the Stripe Checkout URL\n"
             "  3. Send cards (max 10, 1 per line)\n\n"
-            "▸ <b>" + sc("FORMAT:") + "</b> <code>cc|mm|yy|cvv</code>\n"
-            "▸ <b>" + sc("GATE:") + "</b> " + sc("Stripe Android SDK") + "\n"
-            "▸ <b>" + sc("COST:") + "</b> 1 credit per card"
+            "â–¸ <b>" + sc("FORMAT:") + "</b> <code>cc|mm|yy|cvv</code>\n"
+            "â–¸ <b>" + sc("GATE:") + "</b> " + sc("Stripe Android SDK") + "\n"
+            "â–¸ <b>" + sc("COST:") + "</b> 1 credit per card"
         )
         kb = types.InlineKeyboardMarkup()
         kb.row(
-            types.InlineKeyboardButton("🚀 " + sc("Start /ac"), callback_data="ac_start"),
-            types.InlineKeyboardButton("⬅️ " + sc("Back"), callback_data="menu_toolbox"),
+            types.InlineKeyboardButton("ðŸš€ " + sc("Start /ac"), callback_data="ac_start"),
+            types.InlineKeyboardButton("â¬…ï¸ " + sc("Back"), callback_data="menu_toolbox"),
         )
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "ac_start":
-        # Trigger the /ac flow — set pending state
+        # Trigger the /ac flow â€” set pending state
         if uid and is_registered(uid):
             pending_ac_link[cid] = time.time()
             try:
@@ -4086,83 +4086,83 @@ def handle_callback(callback):
         
         hit_rate = (hits_done / checks_done * 100) if checks_done > 0 else 0.0
         text = (
-            "📊 <b>" + _to_bold_sans("Statistics") + "</b>\n\n"
-            f"💰 <b>" + _to_bold_sans("Credits:") + f"</b> {cred}\n"
-            f"✅ <b>" + _to_bold_sans("Checks:") + f"</b> {checks_done}\n"
-            f"🔥 <b>" + _to_bold_sans("Hits:") + f"</b> {hits_done}\n"
-            f"🎯 <b>" + _to_bold_sans("Hit Rate:") + f"</b> {hit_rate:.1f}%\n\n"
-            f"🌐 <b>" + _to_bold_sans("Shopify Sites:") + f"</b> {sites_count}\n"
-            f"🔷 <b>" + _to_bold_sans("BT Sites:") + f"</b> {bt_sites_count}\n"
-            f"🔄 <b>" + _to_bold_sans("Proxies:") + f"</b> {proxies_count}\n"
+            "ðŸ“Š <b>" + _to_bold_sans("Statistics") + "</b>\n\n"
+            f"ðŸ’° <b>" + _to_bold_sans("Credits:") + f"</b> {cred}\n"
+            f"âœ… <b>" + _to_bold_sans("Checks:") + f"</b> {checks_done}\n"
+            f"ðŸ”¥ <b>" + _to_bold_sans("Hits:") + f"</b> {hits_done}\n"
+            f"ðŸŽ¯ <b>" + _to_bold_sans("Hit Rate:") + f"</b> {hit_rate:.1f}%\n\n"
+            f"ðŸŒ <b>" + _to_bold_sans("Shopify Sites:") + f"</b> {sites_count}\n"
+            f"ðŸ”· <b>" + _to_bold_sans("BT Sites:") + f"</b> {bt_sites_count}\n"
+            f"ðŸ”„ <b>" + _to_bold_sans("Proxies:") + f"</b> {proxies_count}\n"
         )
         kb = types.InlineKeyboardMarkup()
-        kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+        kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "menu_profile":
         if not uid:
-            text = "❌ " + _to_bold_sans("Could not get user.")
+            text = "âŒ " + _to_bold_sans("Could not get user.")
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
         else:
             # Use cached data for instant response
             user_data = _get_cached_user_data(uid)
             
             if not user_data:
-                text = "⚠️ " + _to_bold_sans("Not registered. Use") + " <code>/register</code> " + _to_bold_sans("or press Register below.")
+                text = "âš ï¸ " + _to_bold_sans("Not registered. Use") + " <code>/register</code> " + _to_bold_sans("or press Register below.")
                 kb = types.InlineKeyboardMarkup()
-                kb.add(types.InlineKeyboardButton("✨ " + _to_bold_sans("Register"), callback_data="menu_register"))
-                kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+                kb.add(types.InlineKeyboardButton("âœ¨ " + _to_bold_sans("Register"), callback_data="menu_register"))
+                kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
             else:
                 cred = user_data["credits"]
-                reg_date = user_data["registered_at"][:10] if user_data["registered_at"] else "—"
+                reg_date = user_data["registered_at"][:10] if user_data["registered_at"] else "â€”"
                 checks_done = user_data["total_checks"]
                 hits_done = user_data.get("total_hits", 0)
                 
                 # Get username (no DB query)
                 username = callback.from_user.username if callback.from_user.username else None
-                user_display = f"@{username}" if username else f"ɪᴅ: {uid}"
+                user_display = f"@{username}" if username else f"Éªá´…: {uid}"
                 
                 # Plan info
                 user_plan = _get_user_plan_name(uid)
                 if user_plan:
                     plan_name = PLANS.get(user_plan, {}).get("name", user_plan.title())
-                    plan_line = f"💎 <b>" + _to_bold_sans("Plan:") + f"</b> {plan_name}\n"
-                    cred_display = "♾ " + _to_bold_sans("Unlimited")
+                    plan_line = f"ðŸ’Ž <b>" + _to_bold_sans("Plan:") + f"</b> {plan_name}\n"
+                    cred_display = "â™¾ " + _to_bold_sans("Unlimited")
                 else:
                     plan_line = ""
                     cred_display = str(cred)
                 
                 text = (
-                    "👤 <b>" + _to_bold_sans("Profile") + "</b>\n\n"
-                    f"👤 <b>" + _to_bold_sans("User:") + f"</b> {user_display}\n"
+                    "ðŸ‘¤ <b>" + _to_bold_sans("Profile") + "</b>\n\n"
+                    f"ðŸ‘¤ <b>" + _to_bold_sans("User:") + f"</b> {user_display}\n"
                     + plan_line +
-                    f"💰 <b>" + _to_bold_sans("Credits:") + f"</b> {cred_display}\n"
-                    f"✅ <b>" + _to_bold_sans("Checks:") + f"</b> {checks_done}\n"
-                    f"🔥 <b>" + _to_bold_sans("Hits:") + f"</b> {hits_done}\n"
-                    f"📅 <b>" + _to_bold_sans("Joined:") + f"</b> {reg_date}\n"
+                    f"ðŸ’° <b>" + _to_bold_sans("Credits:") + f"</b> {cred_display}\n"
+                    f"âœ… <b>" + _to_bold_sans("Checks:") + f"</b> {checks_done}\n"
+                    f"ðŸ”¥ <b>" + _to_bold_sans("Hits:") + f"</b> {hits_done}\n"
+                    f"ðŸ“… <b>" + _to_bold_sans("Joined:") + f"</b> {reg_date}\n"
                 )
                 kb = types.InlineKeyboardMarkup()
-                kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+                kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
         
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "menu_gates":
         sc = _to_bold_sans
         
-        shopify_status = "🟢 " + sc("ONLINE") if True else "🔴 " + sc("OFFLINE")
-        braintree_status = "🟢 " + sc("ONLINE") if _HAS_BT else "🔴 " + sc("OFFLINE")
-        stripe_ac_status = "🟢 " + sc("ONLINE")
-        stripe_chg_status = "🟢 " + sc("ONLINE") if _HAS_ST else "🔴 " + sc("OFFLINE")
+        shopify_status = "ðŸŸ¢ " + sc("ONLINE") if True else "ðŸ”´ " + sc("OFFLINE")
+        braintree_status = "ðŸŸ¢ " + sc("ONLINE") if _HAS_BT else "ðŸ”´ " + sc("OFFLINE")
+        stripe_ac_status = "ðŸŸ¢ " + sc("ONLINE")
+        stripe_chg_status = "ðŸŸ¢ " + sc("ONLINE") if _HAS_ST else "ðŸ”´ " + sc("OFFLINE")
         
         text = (
-            "🔐 <b>" + sc("API Status") + "</b>\n\n"
-            "💳 <b>" + sc("Shopify:") + "</b> " + shopify_status + "\n"
-            "🔷 <b>" + sc("Braintree:") + "</b> " + braintree_status + "\n"
-            "⚡ <b>" + sc("Stripe AC:") + "</b> " + stripe_ac_status + "\n"
-            "⚡ <b>" + sc("Stripe Charge:") + "</b> " + stripe_chg_status + "\n"
+            "ðŸ” <b>" + sc("API Status") + "</b>\n\n"
+            "ðŸ’³ <b>" + sc("Shopify:") + "</b> " + shopify_status + "\n"
+            "ðŸ”· <b>" + sc("Braintree:") + "</b> " + braintree_status + "\n"
+            "âš¡ <b>" + sc("Stripe AC:") + "</b> " + stripe_ac_status + "\n"
+            "âš¡ <b>" + sc("Stripe Charge:") + "</b> " + stripe_chg_status + "\n"
         )
         
         kb = types.InlineKeyboardMarkup()
-        kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+        kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
         
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "menu_plans":
@@ -4173,39 +4173,39 @@ def handle_callback(callback):
             plan_info = PLANS.get(user_plan, {})
             udata = _get_cached_user_data(uid)
             exp = udata.get("plan_expires", "") if udata else ""
-            exp_short = exp[:10] if exp else "—"
-            plan_line = f"\n✅ " + sc("YOUR PLAN:") + f" <b>{plan_info.get('name', user_plan.title())}</b>\n⏱ " + sc("EXPIRES:") + f" <b>{exp_short}</b>\n"
+            exp_short = exp[:10] if exp else "â€”"
+            plan_line = f"\nâœ… " + sc("YOUR PLAN:") + f" <b>{plan_info.get('name', user_plan.title())}</b>\nâ± " + sc("EXPIRES:") + f" <b>{exp_short}</b>\n"
         else:
             plan_line = ""
         text = (
-            "💎 <b>" + sc("Premium Plans") + "</b>\n" + plan_line + "\n"
+            "ðŸ’Ž <b>" + sc("Premium Plans") + "</b>\n" + plan_line + "\n"
             "<b>" + sc("Basic Plan") + "</b> - " + sc("$5/month") + "\n"
-            "• " + sc("Unlimited credits") + "\n"
-            "• " + sc("Unlimited checks") + "\n"
-            "• " + sc("Basic support") + "\n\n"
+            "â€¢ " + sc("Unlimited credits") + "\n"
+            "â€¢ " + sc("Unlimited checks") + "\n"
+            "â€¢ " + sc("Basic support") + "\n\n"
             "<b>" + sc("Pro Plan") + "</b> - " + sc("$15/month") + "\n"
-            "• " + sc("Unlimited credits") + "\n"
-            "• " + sc("Unlimited checks") + "\n"
-            "• " + sc("Priority support") + "\n"
-            "• " + sc("Custom gates") + "\n\n"
+            "â€¢ " + sc("Unlimited credits") + "\n"
+            "â€¢ " + sc("Unlimited checks") + "\n"
+            "â€¢ " + sc("Priority support") + "\n"
+            "â€¢ " + sc("Custom gates") + "\n\n"
             "<i>" + sc("Contact @ishirochen to upgrade") + "</i>"
         )
         kb = types.InlineKeyboardMarkup()
-        kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+        kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "menu_support":
         text = (
-            "💬 <b>" + _to_bold_sans("Support") + "</b>\n\n"
+            "ðŸ’¬ <b>" + _to_bold_sans("Support") + "</b>\n\n"
             + _to_bold_sans("Need help? Contact us:") + "\n\n"
-            "💬 <b>" + _to_bold_sans("Chat:") + "</b> @ShiroSupportchat\n"
-            "👤 <b>" + _to_bold_sans("Telegram:") + "</b> @ShiroSupport"
+            "ðŸ’¬ <b>" + _to_bold_sans("Chat:") + "</b> @ShiroSupportchat\n"
+            "ðŸ‘¤ <b>" + _to_bold_sans("Telegram:") + "</b> @ShiroSupport"
         )
         kb = types.InlineKeyboardMarkup()
-        kb.add(types.InlineKeyboardButton("⬅️ " + _to_bold_sans("Back"), callback_data="menu_back"))
+        kb.add(types.InlineKeyboardButton("â¬…ï¸ " + _to_bold_sans("Back"), callback_data="menu_back"))
         _safe_edit_menu(cid, mid, text, kb, content_type)
     elif data == "menu_register":
         if not uid:
-            _safe_edit_menu(cid, mid, "❌ Could not get user ID.", _main_menu_kb_with_register(uid), content_type)
+            _safe_edit_menu(cid, mid, "âŒ Could not get user ID.", _main_menu_kb_with_register(uid), content_type)
         else:
             cb_uname = getattr(callback.from_user, "username", None)
             cb_fname = getattr(callback.from_user, "first_name", None)
@@ -4214,18 +4214,18 @@ def handle_callback(callback):
             if user_data:
                 cred = user_data["credits"]
                 update_user_activity(uid, username=cb_uname, first_name=cb_fname)
-                _safe_edit_menu(cid, mid, f"✅ Already registered.\n💰 Credits: <b>{cred}</b>", _main_menu_kb_with_register(uid), content_type)
+                _safe_edit_menu(cid, mid, f"âœ… Already registered.\nðŸ’° Credits: <b>{cred}</b>", _main_menu_kb_with_register(uid), content_type)
             elif register_user(uid, username=cb_uname, first_name=cb_fname):
-                _safe_edit_menu(cid, mid, f"✅ Registered!\n💰 Credits: <b>{INITIAL_CREDITS}</b>", _main_menu_kb_with_register(uid), content_type)
+                _safe_edit_menu(cid, mid, f"âœ… Registered!\nðŸ’° Credits: <b>{INITIAL_CREDITS}</b>", _main_menu_kb_with_register(uid), content_type)
             else:
-                _safe_edit_menu(cid, mid, "❌ Registration failed (DB error).", _main_menu_kb_with_register(uid), content_type)
+                _safe_edit_menu(cid, mid, "âŒ Registration failed (DB error).", _main_menu_kb_with_register(uid), content_type)
     elif data == "menu_back":
-        text = "<b>ꜱʜɪʀᴏ ꜱʏꜱᴛᴇᴍ</b>\n\nꜱᴇʟᴇᴄᴛ ᴀɴ ᴏᴘᴛɪᴏɴ ʙᴇʟᴏᴡ"
+        text = "<b>êœ±ÊœÉªÊ€á´ êœ±Êêœ±á´›á´‡á´</b>\n\nêœ±á´‡ÊŸá´‡á´„á´› á´€É´ á´á´˜á´›Éªá´É´ Ê™á´‡ÊŸá´á´¡"
         kb = _main_menu_kb_with_register(uid)
         _safe_edit_menu(cid, mid, text, kb, content_type)
     # Remove site
     elif data.startswith("rs_"):
-        # Remove All Sites — confirmation prompt
+        # Remove All Sites â€” confirmation prompt
         if data == "rs_all_confirm":
             sites = get_sites(cid)
             count = len(sites) if sites else 0
@@ -4234,19 +4234,19 @@ def handle_callback(callback):
                 return
             kb = types.InlineKeyboardMarkup(row_width=2)
             kb.row(
-                types.InlineKeyboardButton(f"✅ Yes, remove all {count}", callback_data="rs_all_yes"),
-                types.InlineKeyboardButton("❌ Cancel", callback_data="menu_sitelist"),
+                types.InlineKeyboardButton(f"âœ… Yes, remove all {count}", callback_data="rs_all_yes"),
+                types.InlineKeyboardButton("âŒ Cancel", callback_data="menu_sitelist"),
             )
-            _safe_edit_menu(cid, mid, f"⚠️ <b>Remove ALL {count} sites?</b>\n\nThis cannot be undone.", kb, content_type)
+            _safe_edit_menu(cid, mid, f"âš ï¸ <b>Remove ALL {count} sites?</b>\n\nThis cannot be undone.", kb, content_type)
             return
-        # Remove All Sites — confirmed
+        # Remove All Sites â€” confirmed
         if data == "rs_all_yes":
             sites = get_sites(cid)
             count = len(sites) if sites else 0
             set_sites(cid, [])
-            text = f"🌐 <b>Sites</b>\n━━━━━━━━━━━━━━━━━\n\n✅ Removed all {count} site(s)."
+            text = f"ðŸŒ <b>Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nâœ… Removed all {count} site(s)."
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
             _safe_edit_menu(cid, mid, text, kb, content_type)
             return
         # Remove single site by index
@@ -4256,8 +4256,8 @@ def handle_callback(callback):
                 text, kb = _sites_list_message(cid, with_remove_buttons=True)
                 if not kb:
                     kb = types.InlineKeyboardMarkup()
-                    kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
-                _safe_edit_menu(cid, mid, text or "🌐 <b>Sites</b>\n━━━━━━━━━━━━━━━━━\n\nNo sites left.", kb, content_type)
+                    kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
+                _safe_edit_menu(cid, mid, text or "ðŸŒ <b>Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo sites left.", kb, content_type)
             else:
                 pass  # already answered at top
         except (ValueError, IndexError):
@@ -4272,18 +4272,18 @@ def handle_callback(callback):
                 return
             kb = types.InlineKeyboardMarkup(row_width=2)
             kb.row(
-                types.InlineKeyboardButton(f"✅ Yes, remove all {count}", callback_data="rbs_all_yes"),
-                types.InlineKeyboardButton("❌ Cancel", callback_data="menu_toolbox"),
+                types.InlineKeyboardButton(f"âœ… Yes, remove all {count}", callback_data="rbs_all_yes"),
+                types.InlineKeyboardButton("âŒ Cancel", callback_data="menu_toolbox"),
             )
-            _safe_edit_menu(cid, mid, f"⚠️ <b>Remove ALL {count} BT sites?</b>\n\nThis cannot be undone.", kb, content_type)
+            _safe_edit_menu(cid, mid, f"âš ï¸ <b>Remove ALL {count} BT sites?</b>\n\nThis cannot be undone.", kb, content_type)
             return
         if data == "rbs_all_yes":
             bsites = get_bt_sites(cid)
             count = len(bsites) if bsites else 0
             set_bt_sites(cid, [])
-            text = f"🔷 <b>BT Sites</b>\n━━━━━━━━━━━━━━━━━\n\n✅ Removed all {count} BT site(s)."
+            text = f"ðŸ”· <b>BT Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nâœ… Removed all {count} BT site(s)."
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
             _safe_edit_menu(cid, mid, text, kb, content_type)
             return
         try:
@@ -4292,15 +4292,15 @@ def handle_callback(callback):
                 text, kb = _bt_sites_list_message(cid, with_remove_buttons=True)
                 if not kb:
                     kb = types.InlineKeyboardMarkup()
-                    kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
-                _safe_edit_menu(cid, mid, text or "🔷 <b>BT Sites</b>\n━━━━━━━━━━━━━━━━━\n\nNo BT sites left.", kb, content_type)
+                    kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
+                _safe_edit_menu(cid, mid, text or "ðŸ”· <b>BT Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo BT sites left.", kb, content_type)
             else:
                 pass
         except (ValueError, IndexError):
             pass
     # Remove proxy
     elif data.startswith("rp_"):
-        # Remove All Proxies — confirmation prompt
+        # Remove All Proxies â€” confirmation prompt
         if data == "rp_all_confirm":
             proxies = get_proxies(cid)
             count = len(proxies) if proxies else 0
@@ -4309,19 +4309,19 @@ def handle_callback(callback):
                 return
             kb = types.InlineKeyboardMarkup(row_width=2)
             kb.row(
-                types.InlineKeyboardButton(f"✅ Yes, remove all {count}", callback_data="rp_all_yes"),
-                types.InlineKeyboardButton("❌ Cancel", callback_data="menu_proxylist"),
+                types.InlineKeyboardButton(f"âœ… Yes, remove all {count}", callback_data="rp_all_yes"),
+                types.InlineKeyboardButton("âŒ Cancel", callback_data="menu_proxylist"),
             )
-            _safe_edit_menu(cid, mid, f"⚠️ <b>Remove ALL {count} proxies?</b>\n\nThis cannot be undone.", kb, content_type)
+            _safe_edit_menu(cid, mid, f"âš ï¸ <b>Remove ALL {count} proxies?</b>\n\nThis cannot be undone.", kb, content_type)
             return
-        # Remove All Proxies — confirmed
+        # Remove All Proxies â€” confirmed
         if data == "rp_all_yes":
             proxies = get_proxies(cid)
             count = len(proxies) if proxies else 0
             set_proxies(cid, [])
-            text = f"🔄 <b>Proxies</b>\n━━━━━━━━━━━━━━━━━\n\n✅ Removed all {count} proxy(ies)."
+            text = f"ðŸ”„ <b>Proxies</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nâœ… Removed all {count} proxy(ies)."
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
             _safe_edit_menu(cid, mid, text, kb, content_type)
             return
         # Remove single proxy by index
@@ -4331,8 +4331,8 @@ def handle_callback(callback):
                 text, kb = _proxies_list_message(cid, with_remove_buttons=True)
                 if not kb:
                     kb = types.InlineKeyboardMarkup()
-                    kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
-                _safe_edit_menu(cid, mid, text or "🔄 <b>Proxies</b>\n━━━━━━━━━━━━━━━━━\n\nNo proxies left.", kb, content_type)
+                    kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
+                _safe_edit_menu(cid, mid, text or "ðŸ”„ <b>Proxies</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo proxies left.", kb, content_type)
             else:
                 pass  # already answered at top
         except (ValueError, IndexError):
@@ -4342,28 +4342,28 @@ def handle_callback(callback):
         text, kb = _sites_list_message(cid, with_remove_buttons=True)
         if not kb:
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
-        _safe_edit_menu(cid, mid, text or "🌐 <b>Sites</b>\n━━━━━━━━━━━━━━━━━\n\nNo sites added yet.", kb, content_type)
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
+        _safe_edit_menu(cid, mid, text or "ðŸŒ <b>Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo sites added yet.", kb, content_type)
     elif data == "menu_proxylist":
         text, kb = _proxies_list_message(cid, with_remove_buttons=True)
         if not kb:
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
-        _safe_edit_menu(cid, mid, text or "🔄 <b>Proxies</b>\n━━━━━━━━━━━━━━━━━\n\nNo proxies added yet.", kb, content_type)
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
+        _safe_edit_menu(cid, mid, text or "ðŸ”„ <b>Proxies</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo proxies added yet.", kb, content_type)
     elif data == "menu_setsite":
         pending_sites[cid] = time.time()
-        bot.send_message(cid, "🌐 Send site URLs (one per line).\n\nExample:\n<code>https://store1.com</code>", parse_mode="HTML")
+        bot.send_message(cid, "ðŸŒ Send site URLs (one per line).\n\nExample:\n<code>https://store1.com</code>", parse_mode="HTML")
     elif data == "menu_setproxies":
         pending_proxies[cid] = time.time()
         bot.send_message(cid, "Send proxies (one per line): <code>host:port:user:pass</code>", parse_mode="HTML")
     elif data == "menu_checkproxy":
         proxies = get_proxies(cid)
         kb_back = types.InlineKeyboardMarkup()
-        kb_back.add(types.InlineKeyboardButton("← Back", callback_data="menu_toolbox"))
+        kb_back.add(types.InlineKeyboardButton("â† Back", callback_data="menu_toolbox"))
         if not proxies:
             _safe_edit_menu(cid, mid, "No proxies. <code>/setproxies</code> to add.", kb_back, content_type)
         else:
-            _safe_edit_menu(cid, mid, "Testing proxies…", kb_back, content_type)
+            _safe_edit_menu(cid, mid, "Testing proxiesâ€¦", kb_back, content_type)
             results = []
             ok = [0]
             _res_lock = threading.Lock()
@@ -4376,13 +4376,13 @@ def handle_callback(callback):
                         if r.status_code == 200:
                             with _res_lock:
                                 ok[0] += 1
-                                results.append((i, f"  ✅ {i+1}. {_proxy_display_name(proxy_url)} – OK"))
+                                results.append((i, f"  âœ… {i+1}. {_proxy_display_name(proxy_url)} â€“ OK"))
                         else:
                             with _res_lock:
-                                results.append((i, f"  ❌ {i+1}. {_proxy_display_name(proxy_url)} – HTTP {r.status_code}"))
+                                results.append((i, f"  âŒ {i+1}. {_proxy_display_name(proxy_url)} â€“ HTTP {r.status_code}"))
                 except Exception as e:
                     with _res_lock:
-                        results.append((i, f"  ❌ {i+1}. {_proxy_display_name(proxy_url)} – {str(e)[:30]}"))
+                        results.append((i, f"  âŒ {i+1}. {_proxy_display_name(proxy_url)} â€“ {str(e)[:30]}"))
 
             workers = min(5, len(proxies))
             with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="mchkp") as pool:
@@ -4396,28 +4396,28 @@ def handle_callback(callback):
             _safe_edit_menu(cid, mid, summary, kb_back, content_type)
     elif data == "menu_btsetsite":
         pending_bt_sites[cid] = time.time()
-        bot.send_message(cid, "🔷 Send Braintree/WooCommerce site URLs (one per line).\n\nExample:\n<code>https://store1.com</code>", parse_mode="HTML")
+        bot.send_message(cid, "ðŸ”· Send Braintree/WooCommerce site URLs (one per line).\n\nExample:\n<code>https://store1.com</code>", parse_mode="HTML")
     elif data == "menu_btsitelist":
         text, kb = _bt_sites_list_message(cid, with_remove_buttons=True)
         if not kb:
             kb = types.InlineKeyboardMarkup()
-            kb.add(types.InlineKeyboardButton("⬅️ Back", callback_data="menu_toolbox"))
-        _safe_edit_menu(cid, mid, text or "🔷 <b>BT Sites</b>\n━━━━━━━━━━━━━━━━━\n\nNo BT sites added yet.", kb, content_type)
+            kb.add(types.InlineKeyboardButton("â¬…ï¸ Back", callback_data="menu_toolbox"))
+        _safe_edit_menu(cid, mid, text or "ðŸ”· <b>BT Sites</b>\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\nNo BT sites added yet.", kb, content_type)
     elif data == "menu_utils":
         sc = _to_bold_sans
         text = (
-            "🛠 <b>" + sc("Utilities") + "</b>\n\n"
-            "🔍 <b>" + sc("BIN Lookup") + "</b>\n"
-            "<code>/bin</code> " + sc("xxxxxx — check card BIN info") + "\n\n"
-            "📜 <b>" + sc("History") + "</b>\n"
-            "<code>/history</code> " + sc("— last 10 check results") + "\n\n"
-            "✂️ <b>" + sc("Split TXT") + "</b>\n"
-            "<code>/splittxt</code> " + sc("— split card file into chunks") + "\n\n"
-            "🛑 <b>" + sc("Stop") + "</b>\n"
-            "<code>/stop</code> " + sc("— stop running mass check") + "\n"
+            "ðŸ›  <b>" + sc("Utilities") + "</b>\n\n"
+            "ðŸ” <b>" + sc("BIN Lookup") + "</b>\n"
+            "<code>/bin</code> " + sc("xxxxxx â€” check card BIN info") + "\n\n"
+            "ðŸ“œ <b>" + sc("History") + "</b>\n"
+            "<code>/history</code> " + sc("â€” last 10 check results") + "\n\n"
+            "âœ‚ï¸ <b>" + sc("Split TXT") + "</b>\n"
+            "<code>/splittxt</code> " + sc("â€” split card file into chunks") + "\n\n"
+            "ðŸ›‘ <b>" + sc("Stop") + "</b>\n"
+            "<code>/stop</code> " + sc("â€” stop running mass check") + "\n"
         )
         kb = types.InlineKeyboardMarkup()
-        kb.add(types.InlineKeyboardButton("⬅️ " + sc("Back"), callback_data="menu_back"))
+        kb.add(types.InlineKeyboardButton("â¬…ï¸ " + sc("Back"), callback_data="menu_back"))
         _safe_edit_menu(cid, mid, text, kb, content_type)
     else:
         pass  # already answered at top
@@ -4451,7 +4451,7 @@ def cmd_splittxt(message):
     # Must be a reply to a document
     reply = message.reply_to_message
     if not reply or not reply.document:
-        bot.reply_to(message, "⚠️ Reply to a <b>.txt file</b> with this command.\n\nExample: send a .txt file, then reply to it with <code>/splittxt 500</code>", parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ Reply to a <b>.txt file</b> with this command.\n\nExample: send a .txt file, then reply to it with <code>/splittxt 500</code>", parse_mode="HTML")
         return
 
     # Download the file
@@ -4464,19 +4464,19 @@ def cmd_splittxt(message):
         except Exception:
             file_text = data.decode("latin-1", errors="ignore")
     except Exception as e:
-        bot.reply_to(message, f"❌ Failed to download file: {str(e)[:100]}")
+        bot.reply_to(message, f"âŒ Failed to download file: {str(e)[:100]}")
         return
 
     # Parse lines (keep all non-empty lines, cards are lines with |)
     all_lines = [line.strip() for line in file_text.splitlines() if line.strip()]
     if not all_lines:
-        bot.reply_to(message, "❌ File is empty.")
+        bot.reply_to(message, "âŒ File is empty.")
         return
 
     total = len(all_lines)
     num_chunks = (total + chunk_size - 1) // chunk_size  # ceiling division
 
-    status = bot.reply_to(message, f"✂️ Splitting <b>{total}</b> lines into chunks of <b>{chunk_size}</b> ({num_chunks} file{'s' if num_chunks > 1 else ''})...", parse_mode="HTML")
+    status = bot.reply_to(message, f"âœ‚ï¸ Splitting <b>{total}</b> lines into chunks of <b>{chunk_size}</b> ({num_chunks} file{'s' if num_chunks > 1 else ''})...", parse_mode="HTML")
 
     for i in range(num_chunks):
         start = i * chunk_size
@@ -4486,14 +4486,14 @@ def cmd_splittxt(message):
         buf = io.BytesIO(chunk_text.encode("utf-8"))
         buf.name = f"cards_part{i+1}_of_{num_chunks}.txt"
         try:
-            bot.send_document(cid, buf, caption=f"📄 Part {i+1}/{num_chunks} — {len(chunk_lines)} cards")
+            bot.send_document(cid, buf, caption=f"ðŸ“„ Part {i+1}/{num_chunks} â€” {len(chunk_lines)} cards")
         except Exception:
             pass
         if num_chunks > 3:
             time.sleep(0.3)  # rate limit for many files
 
     try:
-        bot.edit_message_text(f"✅ Split <b>{total}</b> cards into <b>{num_chunks}</b> file{'s' if num_chunks > 1 else ''} of {chunk_size} each.", cid, status.message_id, parse_mode="HTML")
+        bot.edit_message_text(f"âœ… Split <b>{total}</b> cards into <b>{num_chunks}</b> file{'s' if num_chunks > 1 else ''} of {chunk_size} each.", cid, status.message_id, parse_mode="HTML")
     except Exception:
         pass
 
@@ -4514,20 +4514,20 @@ def cmd_bin(message):
         return
     card_input = parts[1].split("|")[0].strip()
     if not card_input.isdigit() or len(card_input) < 6:
-        bot.reply_to(message, "❌ Provide at least 6 digits.")
+        bot.reply_to(message, "âŒ Provide at least 6 digits.")
         return
     info = _lookup_bin(card_input)
     if not info:
-        bot.reply_to(message, "❌ BIN not found or API unavailable.")
+        bot.reply_to(message, "âŒ BIN not found or API unavailable.")
         return
     msg = (
-        f"💳 BIN Info: <code>{card_input[:6]}xxxx</code>\n\n"
-        f"🏦 Bank: {_esc(info['bank'])}\n"
-        f"💎 Type: {_esc(info['type'])} | {_esc(info['scheme'])}\n"
+        f"ðŸ’³ BIN Info: <code>{card_input[:6]}xxxx</code>\n\n"
+        f"ðŸ¦ Bank: {_esc(info['bank'])}\n"
+        f"ðŸ’Ž Type: {_esc(info['type'])} | {_esc(info['scheme'])}\n"
         f"{info['emoji']} Country: {_esc(info['country_name'])} ({info['country']})"
     )
     if info.get('brand'):
-        msg += f"\n🏷 Brand: {_esc(info['brand'])}"
+        msg += f"\nðŸ· Brand: {_esc(info['brand'])}"
     bot.reply_to(message, msg, parse_mode="HTML")
 
 
@@ -4542,17 +4542,17 @@ def cmd_history(message):
         return
     db, _ = _get_mongo()
     if db is None:
-        bot.reply_to(message, "❌ Database not connected.")
+        bot.reply_to(message, "âŒ Database not connected.")
         return
     history_coll = db["check_history"]
     results = list(history_coll.find({"user_id": uid}).sort("timestamp", -1).limit(10))
     if not results:
         bot.reply_to(message, "No check history found.")
         return
-    lines = ["📋 <b>Recent Checks</b>\n"]
+    lines = ["ðŸ“‹ <b>Recent Checks</b>\n"]
     for r in results:
         status = r.get("status", "?")
-        emoji = "✅" if status in ("Charged", "Approved") else "❌" if status == "Declined" else "⚠️"
+        emoji = "âœ…" if status in ("Charged", "Approved") else "âŒ" if status == "Declined" else "âš ï¸"
         card = r.get("card_last4", "????")
         gw = r.get("gateway", "?")
         msg_text = (r.get("message") or "")[:40]
@@ -4569,7 +4569,7 @@ def cmd_stop(message):
     cid = message.chat.id
     _log_cmd(message, "/stop")
     _stop_flags[cid] = True
-    bot.reply_to(message, "🛑 " + _to_bold_sans("STOPPING CHECKS") + "… remaining cards will be skipped and credits refunded.", parse_mode="HTML")
+    bot.reply_to(message, "ðŸ›‘ " + _to_bold_sans("STOPPING CHECKS") + "â€¦ remaining cards will be skipped and credits refunded.", parse_mode="HTML")
 
 
 @bot.message_handler(func=lambda m: m.text and m.text.strip().lower().startswith("/sh "))
@@ -4586,7 +4586,7 @@ def cmd_sh(message):
         bot.reply_to(message, "Register first to use the bot. Use /register or press Register on /start.", parse_mode="HTML")
         return
     update_user_activity(uid, username=getattr(message.from_user, 'username', None), first_name=getattr(message.from_user, 'first_name', None))
-    _is_owner = (uid == OWNER_ID)
+    _is_owner = (uid in OWNER_IDS)
     _has_plan = _user_has_active_plan(uid)
     if not _is_owner and not _has_plan:
         cred = _udata.get("credits", 0)
@@ -4617,11 +4617,11 @@ def cmd_sh(message):
     if not _re.fullmatch(r'\d{3,4}', cvv):
         bot.reply_to(message, "Invalid CVV (3-4 digits).")
         return
-    # Luhn pre-validation — reject invalid cards before deducting credits
+    # Luhn pre-validation â€” reject invalid cards before deducting credits
     card_str = "|".join([cc_num, mm, yy, cvv])
     valid, err = _validate_card_format(card_str)
     if not valid:
-        bot.reply_to(message, f"❌ {err}\nNo credits deducted.")
+        bot.reply_to(message, f"âŒ {err}\nNo credits deducted.")
         return
     sites = get_sites(cid)
     proxies = get_proxies(cid)
@@ -4635,7 +4635,7 @@ def cmd_sh(message):
         bot.reply_to(message, "No sites. <code>/setsite</code> to add.", parse_mode="HTML")
         return
     if not proxies:
-        bot.reply_to(message, "⚠️ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid CAPTCHA and bans.", parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid CAPTCHA and bans.", parse_mode="HTML")
         return
     if not _is_owner and not _has_plan:
         if not deduct_credits(uid, CREDITS_PER_CHECK):
@@ -4646,14 +4646,14 @@ def cmd_sh(message):
     card_str = "|".join(parts)
     # Anti-duplicate check (owner bypassed)
     if not _is_owner and not _has_plan and _is_duplicate_card(card_str):
-        bot.reply_to(message, "⚠️ This card was already checked in the last 5 minutes. Skipped (no credits deducted).")
+        bot.reply_to(message, "âš ï¸ This card was already checked in the last 5 minutes. Skipped (no credits deducted).")
         # Refund the credit
         coll = _users_coll()
         if coll is not None:
             coll.update_one({"_id": uid}, {"$inc": {"credits": CREDITS_PER_CHECK}})
             _invalidate_user_cache(uid)
         return
-    status_msg = bot.reply_to(message, "⏳ " + _to_bold_sans("CHECKING CARD..."), parse_mode="HTML")
+    status_msg = bot.reply_to(message, "â³ " + _to_bold_sans("CHECKING CARD..."), parse_mode="HTML")
     try:
         result = run_check_sync(site, card_str, proxy)
         _record_proxy_result(proxy, result)
@@ -4662,7 +4662,7 @@ def cmd_sh(message):
         err_text = str(e)[:300]
         if DEBUG:
             print(f"[Shiro] /sh exception -> {err_text}")
-        bot.edit_message_text(f"❌ Error: {err_text}", cid, status_msg.message_id)
+        bot.edit_message_text(f"âŒ Error: {err_text}", cid, status_msg.message_id)
         # Refund credit on exception (only if not plan user)
         if not _has_plan:
             coll = _users_coll()
@@ -4704,41 +4704,41 @@ def cmd_sh(message):
         pass  # No hit notification for Approved
         increment_total_hits(uid, 1)
 
-    # Build response — real code from Shopify processingError
+    # Build response â€” real code from Shopify processingError
     if status == "Charged":
-        _resp_text = "Order completed 🛒"
-        _header = "<b>𝘾𝙃𝘼𝙍𝙂𝙀𝘿</b> 🧾"
+        _resp_text = "Order completed ðŸ›’"
+        _header = "<b>ð˜¾ð™ƒð˜¼ð™ð™‚ð™€ð˜¿</b> ðŸ§¾"
     elif status == "Approved":
         _resp_text = _esc(code or msg or "Approved")
-        _header = "<b>𝘼𝙋𝙋𝙍𝙊𝙑𝙀𝘿</b> ✅"
+        _header = "<b>ð˜¼ð™‹ð™‹ð™ð™Šð™‘ð™€ð˜¿</b> âœ…"
     elif status == "Declined":
         _resp_text = _esc(code or msg or "Declined")
-        _header = "<b>𝘿𝙀𝘾𝙇𝙄𝙉𝙀𝘿</b> ❌"
+        _header = "<b>ð˜¿ð™€ð˜¾ð™‡ð™„ð™‰ð™€ð˜¿</b> âŒ"
     else:
         _resp_text = _esc(code or msg or status)
-        _header = "<b>𝙀𝙍𝙍𝙊𝙍</b> ⚠️"
+        _header = "<b>ð™€ð™ð™ð™Šð™</b> âš ï¸"
 
     cc_num = card_str.split("|")[0]
     out  = f"{_header}\n\n"
-    out += f"<b>𝗖𝗖</b> ⇾ <code>{card_str}</code>\n"
-    out += f"<b>𝗚𝗮𝘁𝗲𝘄𝗮𝘆</b> ⇾ Shopify Payments\n"
-    out += f"<b>𝗥𝗲𝘀𝗽𝗼𝗻𝘀𝗲</b> ⇾ {_resp_text}\n"
-    out += f"<b>𝗣𝗿𝗶𝗰𝗲</b> ⇾ ${_esc(price)} 💸\n"
+    out += f"<b>ð—–ð—–</b> â‡¾ <code>{card_str}</code>\n"
+    out += f"<b>ð—šð—®ð˜ð—²ð˜„ð—®ð˜†</b> â‡¾ Shopify Payments\n"
+    out += f"<b>ð—¥ð—²ð˜€ð—½ð—¼ð—»ð˜€ð—²</b> â‡¾ {_resp_text}\n"
+    out += f"<b>ð—£ð—¿ð—¶ð—°ð—²</b> â‡¾ ${_esc(price)} ðŸ’¸\n"
     if status == "Error" and not _is_owner and not _has_plan:
-        out += f"<b>𝗡𝗼𝘁𝗲</b> ⇾ Credit refunded 💰\n"
+        out += f"<b>ð—¡ð—¼ð˜ð—²</b> â‡¾ Credit refunded ðŸ’°\n"
 
     # BIN info
     try:
         bi = _lookup_bin(cc_num)
         if bi:
-            out += f"\n<b>𝗕𝗜𝗡 𝗜𝗻𝗳𝗼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
-            out += f"<b>𝗕𝗮𝗻𝗸:</b> {_esc(bi['bank'])}\n"
-            out += f"<b>𝗖𝗼𝘂𝗻𝘁𝗿𝘆:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
+            out += f"\n<b>ð—•ð—œð—¡ ð—œð—»ð—³ð—¼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
+            out += f"<b>ð—•ð—®ð—»ð—¸:</b> {_esc(bi['bank'])}\n"
+            out += f"<b>ð—–ð—¼ð˜‚ð—»ð˜ð—¿ð˜†:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
     except Exception:
         pass
 
     # Time taken
-    out += f"\n<b>𝗧𝗶𝗺𝗲</b> ⇾ {elapsed:.1f}s ⏱️\n"
+    out += f"\n<b>ð—§ð—¶ð—ºð—²</b> â‡¾ {elapsed:.1f}s â±ï¸\n"
 
     
     bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
@@ -4746,9 +4746,9 @@ def cmd_sh(message):
     _bg_fire(_log_check_result, uid, cc_num[-4:], "Shopify", status, code or msg, site)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  /st — Stripe Charge Single Card Check
-# ═══════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  /st â€” Stripe Charge Single Card Check
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 @bot.message_handler(func=lambda m: m.text and m.text.strip().lower().startswith("/st "))
 @_crash_safe
@@ -4763,9 +4763,9 @@ def cmd_st(message):
         return
     update_user_activity(uid, username=getattr(message.from_user, 'username', None), first_name=getattr(message.from_user, 'first_name', None))
     if not _HAS_ST:
-        bot.reply_to(message, "❌ Stripe Charge API not available.")
+        bot.reply_to(message, "âŒ Stripe Charge API not available.")
         return
-    _is_owner = (uid == OWNER_ID)
+    _is_owner = (uid in OWNER_IDS)
     _has_plan = _user_has_active_plan(uid)
     if not _is_owner and not _has_plan:
         cred = _udata.get("credits", 0)
@@ -4798,11 +4798,11 @@ def cmd_st(message):
     card_str = "|".join([cc_num, mm, yy, cvv])
     valid, err = _validate_card_format(card_str)
     if not valid:
-        bot.reply_to(message, f"❌ {err}\nNo credits deducted.")
+        bot.reply_to(message, f"âŒ {err}\nNo credits deducted.")
         return
     # Anti-duplicate
     if not _is_owner and not _has_plan and _is_duplicate_card(card_str):
-        bot.reply_to(message, "⚠️ This card was already checked in the last 5 minutes. Skipped (no credits deducted).")
+        bot.reply_to(message, "âš ï¸ This card was already checked in the last 5 minutes. Skipped (no credits deducted).")
         return
     if not _is_owner and not _has_plan:
         if not deduct_credits(uid, CREDITS_PER_CHECK):
@@ -4812,7 +4812,7 @@ def cmd_st(message):
     if uid and cid != uid and not proxies:
         proxies = get_proxies(uid)
     if not proxies:
-        bot.reply_to(message, "⚠️ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid rate limits.", parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid rate limits.", parse_mode="HTML")
         # Refund credit if already deducted
         if not _is_owner and not _has_plan:
             coll = _users_coll()
@@ -4825,14 +4825,14 @@ def cmd_st(message):
     if p:
         proxy = {"http": p, "https": p}
     print("[DEBUG] /st: Sending checking message...")
-    status_msg = bot.reply_to(message, "⏳ " + _to_bold_sans("CHECKING CARD (STRIPE CHARGE)..."), parse_mode="HTML")
+    status_msg = bot.reply_to(message, "â³ " + _to_bold_sans("CHECKING CARD (STRIPE CHARGE)..."), parse_mode="HTML")
     try:
         result = _st_check_sync(card_str, proxy=proxy)
         if result is None:
             result = {"status": "Error", "message": "No response from gateway", "is_approved": False}
     except Exception as e:
         err_text = str(e)[:300]
-        bot.edit_message_text(f"❌ Error: {err_text}", cid, status_msg.message_id)
+        bot.edit_message_text(f"âŒ Error: {err_text}", cid, status_msg.message_id)
         if not _is_owner and not _has_plan:
             coll = _users_coll()
             if coll is not None:
@@ -4850,10 +4850,10 @@ def cmd_st(message):
         coll.update_one({"_id": uid}, {"$inc": _mongo_inc})
         _invalidate_user_cache(uid)
 
-    # Format output — same style as /sh
+    # Format output â€” same style as /sh
     if status == "Charged":
-        _header = "<b>𝘾𝙃𝘼𝙍𝙂𝙀𝘿</b> 🧾"
-        _resp_text = "Charged $1.00 🛒"
+        _header = "<b>ð˜¾ð™ƒð˜¼ð™ð™‚ð™€ð˜¿</b> ðŸ§¾"
+        _resp_text = "Charged $1.00 ðŸ›’"
         try:
             _discord_charged(message, card_str, "forechrist.com", "Donation", "$1.00", "single", status="Charged", response="CHARGED")
         except Exception:
@@ -4864,29 +4864,29 @@ def cmd_st(message):
             pass
         increment_total_hits(uid, 1)
     elif status == "Approved" or (status == "Declined" and result.get("is_approved")):
-        _header = "<b>𝘼𝙋𝙋𝙍𝙊𝙑𝙀𝘿</b> ✅"
+        _header = "<b>ð˜¼ð™‹ð™‹ð™ð™Šð™‘ð™€ð˜¿</b> âœ…"
         _resp_text = _esc(msg_text[:100] or "Approved")
         increment_total_hits(uid, 1)
     elif status == "Declined":
-        _header = "<b>𝘿𝙀𝘾𝙇𝙄𝙉𝙀𝘿</b> ❌"
+        _header = "<b>ð˜¿ð™€ð˜¾ð™‡ð™„ð™‰ð™€ð˜¿</b> âŒ"
         _resp_text = _esc(msg_text[:100] or "Declined")
     else:
-        _header = "<b>𝙀𝙍𝙍𝙊𝙍</b> ⚠️"
+        _header = "<b>ð™€ð™ð™ð™Šð™</b> âš ï¸"
         _resp_text = _esc(msg_text[:100] or status)
 
     out  = f"{_header}\n\n"
-    out += f"<b>𝗖𝗖</b> ⇾ <code>{card_str}</code>\n"
-    out += f"<b>𝗚𝗮𝘁𝗲𝘄𝗮𝘆</b> ⇾ Stripe Charge\n"
-    out += f"<b>𝗥𝗲𝘀𝗽𝗼𝗻𝘀𝗲</b> ⇾ {_resp_text}\n"
+    out += f"<b>ð—–ð—–</b> â‡¾ <code>{card_str}</code>\n"
+    out += f"<b>ð—šð—®ð˜ð—²ð˜„ð—®ð˜†</b> â‡¾ Stripe Charge\n"
+    out += f"<b>ð—¥ð—²ð˜€ð—½ð—¼ð—»ð˜€ð—²</b> â‡¾ {_resp_text}\n"
     if status == "Error" and not _is_owner and not _has_plan:
-        out += f"<b>𝗡𝗼𝘁𝗲</b> ⇾ Credit refunded 💰\n"
+        out += f"<b>ð—¡ð—¼ð˜ð—²</b> â‡¾ Credit refunded ðŸ’°\n"
     # BIN info
     try:
         bi = _lookup_bin(cc_num)
         if bi:
-            out += f"\n<b>𝗕𝗜𝗡 𝗜𝗻𝗳𝗼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
-            out += f"<b>𝗕𝗮𝗻𝗸:</b> {_esc(bi['bank'])}\n"
-            out += f"<b>𝗖𝗼𝘂𝗻𝘁𝗿𝘆:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
+            out += f"\n<b>ð—•ð—œð—¡ ð—œð—»ð—³ð—¼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
+            out += f"<b>ð—•ð—®ð—»ð—¸:</b> {_esc(bi['bank'])}\n"
+            out += f"<b>ð—–ð—¼ð˜‚ð—»ð˜ð—¿ð˜†:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
     except Exception:
         pass
     try:
@@ -4900,9 +4900,9 @@ def cmd_st(message):
     _bg_fire(_log_check_result, uid, cc_num[-4:], "StripeCharge", status, msg_text, "forechrist.com")
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  /bt — Braintree Single Card Check
-# ═══════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  /bt â€” Braintree Single Card Check
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 def _run_bt_sync(site_url, card_str, proxy_url=None):
     """Run one Braintree check on the shared event loop."""
@@ -4930,7 +4930,7 @@ def cmd_bt(message):
         bot.reply_to(message, "Register first to use the bot. Use /register or press Register on /start.", parse_mode="HTML")
         return
     update_user_activity(uid, username=getattr(message.from_user, 'username', None), first_name=getattr(message.from_user, 'first_name', None))
-    _is_owner = (uid == OWNER_ID)
+    _is_owner = (uid in OWNER_IDS)
     _has_plan = _user_has_active_plan(uid)
     if not _is_owner and not _has_plan:
         cred = _udata.get("credits", 0)
@@ -4960,11 +4960,11 @@ def cmd_bt(message):
     if not _re.fullmatch(r'\d{3,4}', cvv):
         bot.reply_to(message, "Invalid CVV (3-4 digits).")
         return
-    # Luhn pre-validation — reject invalid cards before deducting credits
+    # Luhn pre-validation â€” reject invalid cards before deducting credits
     card_str = "|".join([cc_num, mm, yy, cvv])
     valid, err = _validate_card_format(card_str)
     if not valid:
-        bot.reply_to(message, f"❌ {err}\nNo credits deducted.")
+        bot.reply_to(message, f"âŒ {err}\nNo credits deducted.")
         return
     bt_sites = get_bt_sites(cid)
     proxies = get_proxies(cid)
@@ -4977,7 +4977,7 @@ def cmd_bt(message):
         bot.reply_to(message, "No BT sites. <code>/btsite</code> to add.", parse_mode="HTML")
         return
     if not proxies:
-        bot.reply_to(message, "⚠️ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code>.", parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code>.", parse_mode="HTML")
         return
     if not _is_owner and not _has_plan:
         if not deduct_credits(uid, CREDITS_PER_CHECK):
@@ -4987,20 +4987,20 @@ def cmd_bt(message):
     proxy = _pick_proxy(proxies)  # Rotate proxy for each check
     card_str = "|".join(parts)
     if not _is_owner and not _has_plan and _is_duplicate_card(card_str):
-        bot.reply_to(message, "⚠️ This card was already checked in the last 5 minutes. Skipped (no credits deducted).")
+        bot.reply_to(message, "âš ï¸ This card was already checked in the last 5 minutes. Skipped (no credits deducted).")
         coll = _users_coll()
         if coll is not None:
             coll.update_one({"_id": uid}, {"$inc": {"credits": CREDITS_PER_CHECK}})
             _invalidate_user_cache(uid)
         return
-    status_msg = bot.reply_to(message, "⏳ " + _to_bold_sans("CHECKING CARD (BRAINTREE)..."), parse_mode="HTML")
+    status_msg = bot.reply_to(message, "â³ " + _to_bold_sans("CHECKING CARD (BRAINTREE)..."), parse_mode="HTML")
     try:
         result = _run_bt_sync(site, card_str, proxy)
         _record_proxy_result(proxy, result)
         _record_site_result(site, result)
     except Exception as e:
         err_text = str(e)[:300]
-        bot.edit_message_text(f"❌ Error: {err_text}", cid, status_msg.message_id)
+        bot.edit_message_text(f"âŒ Error: {err_text}", cid, status_msg.message_id)
         if not _is_owner and not _has_plan:
             coll = _users_coll()
             if coll is not None:
@@ -5022,8 +5022,8 @@ def cmd_bt(message):
     site_short = _esc(site.replace("https://", "").replace("http://", "").split("/")[0])
 
     if status == "Charged":
-        _header = "<b>𝘾𝙃𝘼𝙍𝙂𝙀𝘿</b> 🧾"
-        _resp_text = "Card Charged 🛒"
+        _header = "<b>ð˜¾ð™ƒð˜¼ð™ð™‚ð™€ð˜¿</b> ðŸ§¾"
+        _resp_text = "Card Charged ðŸ›’"
         try:
             _discord_charged(message, card_str, site_short, "", "", "single", status="Charged", response="CARD CHARGED")
         except Exception:
@@ -5034,31 +5034,31 @@ def cmd_bt(message):
             pass
         increment_total_hits(uid, 1)
     elif status == "Approved":
-        _header = "<b>𝘼𝙋𝙋𝙍𝙊𝙑𝙀𝘿</b> ✅"
+        _header = "<b>ð˜¼ð™‹ð™‹ð™ð™Šð™‘ð™€ð˜¿</b> âœ…"
         _resp_text = _esc(code or msg or "Approved")
         increment_total_hits(uid, 1)
     elif status == "Declined":
-        _header = "<b>𝘿𝙀𝘾𝙇𝙄𝙉𝙀𝘿</b> ❌"
+        _header = "<b>ð˜¿ð™€ð˜¾ð™‡ð™„ð™‰ð™€ð˜¿</b> âŒ"
         _resp_text = _esc(code or msg or "Declined")
     else:
-        _header = "<b>𝙀𝙍𝙍𝙊𝙍</b> ⚠️"
+        _header = "<b>ð™€ð™ð™ð™Šð™</b> âš ï¸"
         _resp_text = _esc(code or msg or status)
 
     out  = f"{_header}\n\n"
-    out += f"<b>𝗖𝗖</b> ⇾ <code>{card_str}</code>\n"
-    out += f"<b>𝗚𝗮𝘁𝗲𝘄𝗮𝘆</b> ⇾ Braintree\n"
-    out += f"<b>𝗥𝗲𝘀𝗽𝗼𝗻𝘀𝗲</b> ⇾ {_resp_text}\n"
+    out += f"<b>ð—–ð—–</b> â‡¾ <code>{card_str}</code>\n"
+    out += f"<b>ð—šð—®ð˜ð—²ð˜„ð—®ð˜†</b> â‡¾ Braintree\n"
+    out += f"<b>ð—¥ð—²ð˜€ð—½ð—¼ð—»ð˜€ð—²</b> â‡¾ {_resp_text}\n"
     if status == "Error" and not _is_owner and not _has_plan:
-        out += f"<b>𝗡𝗼𝘁𝗲</b> ⇾ Credit refunded 💰\n"
+        out += f"<b>ð—¡ð—¼ð˜ð—²</b> â‡¾ Credit refunded ðŸ’°\n"
 
     # BIN info
     cc_num = card_str.split("|")[0]
     try:
         bi = _lookup_bin(cc_num)
         if bi:
-            out += f"\n<b>𝗕𝗜𝗡 𝗜𝗻𝗳𝗼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
-            out += f"<b>𝗕𝗮𝗻𝗸:</b> {_esc(bi['bank'])}\n"
-            out += f"<b>𝗖𝗼𝘂𝗻𝘁𝗿𝘆:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
+            out += f"\n<b>ð—•ð—œð—¡ ð—œð—»ð—³ð—¼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
+            out += f"<b>ð—•ð—®ð—»ð—¸:</b> {_esc(bi['bank'])}\n"
+            out += f"<b>ð—–ð—¼ð˜‚ð—»ð˜ð—¿ð˜†:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
     except Exception:
         pass
 
@@ -5067,9 +5067,9 @@ def cmd_bt(message):
     _bg_fire(_log_check_result, uid, card_str.split("|")[0][-4:], "Braintree", status, code or msg, site)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  /ac — Stripe Checkout Auto-Checkout
-# ═══════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  /ac â€” Stripe Checkout Auto-Checkout
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 AC_MAX_CARDS = 10
 
 @bot.message_handler(commands=["ac"])
@@ -5086,10 +5086,10 @@ def cmd_ac(message):
     pending_ac_link[cid] = time.time()
     # Clear any stale card pending for this chat
     pending_ac_cards.pop(cid, None)
-    txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> ⚡\n"
-    txt += "━━━━━━━━━━━━━━━━━\n\n"
-    txt += f"▸ Send a <b>Stripe Checkout</b> link\n"
-    txt += f"▸ Format: <code>https://checkout.stripe.com/c/pay/cs_live_...</code>\n\n"
+    txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> âš¡\n"
+    txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+    txt += f"â–¸ Send a <b>Stripe Checkout</b> link\n"
+    txt += f"â–¸ Format: <code>https://checkout.stripe.com/c/pay/cs_live_...</code>\n\n"
     txt += f"<i>{sc('WAITING FOR LINK...')}</i>"
     bot.reply_to(message, txt, parse_mode="HTML")
 
@@ -5102,11 +5102,11 @@ def _handle_ac_link(message):
 
     url = (message.text or "").strip()
     if "checkout.stripe.com" not in url.lower():
-        bot.reply_to(message, "❌ Not a valid Stripe Checkout URL. Use <code>/ac</code> to try again.", parse_mode="HTML")
+        bot.reply_to(message, "âŒ Not a valid Stripe Checkout URL. Use <code>/ac</code> to try again.", parse_mode="HTML")
         return
 
     sc = _to_bold_sans
-    status_msg = bot.reply_to(message, f"🔍 {sc('FETCHING CHECKOUT DATA...')}", parse_mode="HTML")
+    status_msg = bot.reply_to(message, f"ðŸ” {sc('FETCHING CHECKOUT DATA...')}", parse_mode="HTML")
 
     # Fetch checkout info via stripeapi (runs on shared async loop)
     try:
@@ -5116,12 +5116,12 @@ def _handle_ac_link(message):
         )
         info = fut.result(timeout=50)
     except Exception as e:
-        bot.edit_message_text(f"❌ Error fetching checkout: {_esc(str(e)[:200])}", cid, status_msg.message_id, parse_mode="HTML")
+        bot.edit_message_text(f"âŒ Error fetching checkout: {_esc(str(e)[:200])}", cid, status_msg.message_id, parse_mode="HTML")
         return
 
     if not info.get("success"):
         err = info.get("error", "Unknown error")
-        bot.edit_message_text(f"❌ {_esc(err)}", cid, status_msg.message_id, parse_mode="HTML")
+        bot.edit_message_text(f"âŒ {_esc(err)}", cid, status_msg.message_id, parse_mode="HTML")
         return
 
     pk = info.get("pk", "")
@@ -5136,8 +5136,8 @@ def _handle_ac_link(message):
     # cs_id is required for the checkout confirm flow
     if not cs_id:
         bot.edit_message_text(
-            f"❌ Could not extract checkout session ID from this link.\n"
-            f"<b>PK:</b> <code>{_esc(pk[:20])}...</code>" if pk else "❌ No data extracted.",
+            f"âŒ Could not extract checkout session ID from this link.\n"
+            f"<b>PK:</b> <code>{_esc(pk[:20])}...</code>" if pk else "âŒ No data extracted.",
             cid, status_msg.message_id, parse_mode="HTML",
         )
         return
@@ -5172,7 +5172,7 @@ def _handle_ac_link(message):
     # Display checkout info
     pk_short = pk[:12] + "..." + pk[-4:] if len(pk) > 20 else pk
     cs_short = cs_id[:20] + "..." if len(cs_id) > 20 else cs_id
-    _cur_symbols = {"USD": "$", "EUR": "€", "GBP": "£", "INR": "₹", "CAD": "CA$", "AUD": "A$", "JPY": "¥", "BRL": "R$"}
+    _cur_symbols = {"USD": "$", "EUR": "â‚¬", "GBP": "Â£", "INR": "â‚¹", "CAD": "CA$", "AUD": "A$", "JPY": "Â¥", "BRL": "R$"}
     cur_sym = _cur_symbols.get(currency, "")
     if amount and amount != "N/A":
         # Clean display: remove trailing .00 for whole amounts
@@ -5185,25 +5185,25 @@ def _handle_ac_link(message):
     else:
         amount_str = "N/A"
 
-    txt  = f"<b>{sc('STRIPE CHECKOUT INFO')}</b> ⚡\n"
-    txt += "━━━━━━━━━━━━━━━━━\n\n"
-    txt += f"▸ <b>{sc('MERCHANT:')}</b> {_esc(merchant or product or 'N/A')}\n"
-    txt += f"▸ <b>{sc('PRODUCT:')}</b> {_esc(product or 'N/A')}\n"
-    txt += f"▸ <b>{sc('AMOUNT:')}</b> {_esc(amount_str)}\n"
-    txt += f"▸ <b>{sc('PK:')}</b> <code>{_esc(pk_short)}</code>\n"
-    txt += f"▸ <b>{sc('SESSION:')}</b> <code>{_esc(cs_short)}</code>\n"
+    txt  = f"<b>{sc('STRIPE CHECKOUT INFO')}</b> âš¡\n"
+    txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+    txt += f"â–¸ <b>{sc('MERCHANT:')}</b> {_esc(merchant or product or 'N/A')}\n"
+    txt += f"â–¸ <b>{sc('PRODUCT:')}</b> {_esc(product or 'N/A')}\n"
+    txt += f"â–¸ <b>{sc('AMOUNT:')}</b> {_esc(amount_str)}\n"
+    txt += f"â–¸ <b>{sc('PK:')}</b> <code>{_esc(pk_short)}</code>\n"
+    txt += f"â–¸ <b>{sc('SESSION:')}</b> <code>{_esc(cs_short)}</code>\n"
     if email:
-        txt += f"▸ <b>{sc('EMAIL:')}</b> {_esc(email)}\n"
+        txt += f"â–¸ <b>{sc('EMAIL:')}</b> {_esc(email)}\n"
     # Show intent type if found
     _intent_type = info.get("intent_type", "")
     if _intent_type:
         _itype_label = "PaymentIntent" if _intent_type == "payment_intent" else "SetupIntent"
         _has_secret = bool(info.get("pi_client_secret") or info.get("si_client_secret"))
-        txt += f"▸ <b>{sc('FLOW:')}</b> {_itype_label} {'✅' if _has_secret else '⚠️'}\n"
-    txt += "\n━━━━━━━━━━━━━━━━━\n"
-    txt += f"✅ {sc('CHECKOUT READY!')}\n\n"
-    txt += f"▸ Send up to <b>{AC_MAX_CARDS}</b> cards (one per line: <code>cc|mm|yy|cvv</code>)\n"
-    txt += f"▸ <b>1 credit</b> per card tried"
+        txt += f"â–¸ <b>{sc('FLOW:')}</b> {_itype_label} {'âœ…' if _has_secret else 'âš ï¸'}\n"
+    txt += "\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
+    txt += f"âœ… {sc('CHECKOUT READY!')}\n\n"
+    txt += f"â–¸ Send up to <b>{AC_MAX_CARDS}</b> cards (one per line: <code>cc|mm|yy|cvv</code>)\n"
+    txt += f"â–¸ <b>1 credit</b> per card tried"
 
     bot.edit_message_text(txt, cid, status_msg.message_id, parse_mode="HTML")
 
@@ -5221,13 +5221,13 @@ def _handle_ac_cards(message):
     cards = [x.strip() for x in lines if x.strip() and x.count("|") == 3]
 
     if not cards:
-        bot.reply_to(message, "❌ No valid cards found. Format: <code>cc|mm|yy|cvv</code>", parse_mode="HTML")
+        bot.reply_to(message, "âŒ No valid cards found. Format: <code>cc|mm|yy|cvv</code>", parse_mode="HTML")
         return
 
     if len(cards) > AC_MAX_CARDS:
         cards = cards[:AC_MAX_CARDS]
 
-    _is_owner = (uid == OWNER_ID)
+    _is_owner = (uid in OWNER_IDS)
     _has_plan = _user_has_active_plan(uid)
     if not _is_owner and not _has_plan:
         cred = get_credits(uid)
@@ -5255,7 +5255,7 @@ def _handle_ac_cards(message):
     si_id = ac_data.get("si_id", "")
     si_client_secret = ac_data.get("si_client_secret", "")
     intent_type = ac_data.get("intent_type", "")
-    _cur_symbols = {"USD": "$", "EUR": "€", "GBP": "£", "INR": "₹", "CAD": "CA$", "AUD": "A$", "JPY": "¥", "BRL": "R$"}
+    _cur_symbols = {"USD": "$", "EUR": "â‚¬", "GBP": "Â£", "INR": "â‚¹", "CAD": "CA$", "AUD": "A$", "JPY": "Â¥", "BRL": "R$"}
     cur_sym = _cur_symbols.get(currency, "")
     if amount and amount != "N/A":
         try:
@@ -5268,11 +5268,11 @@ def _handle_ac_cards(message):
         amount_str = "N/A"
 
     # Status message
-    txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> ⚡\n"
-    txt += "━━━━━━━━━━━━━━━━━\n\n"
-    txt += f"▸ <b>{sc('CARDS:')}</b> 0/{len(cards)}\n"
-    txt += f"▸ <b>{sc('HITS:')}</b> 0\n"
-    txt += f"▸ <b>{sc('STATUS:')}</b> {sc('STARTING...')}\n"
+    txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> âš¡\n"
+    txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+    txt += f"â–¸ <b>{sc('CARDS:')}</b> 0/{len(cards)}\n"
+    txt += f"â–¸ <b>{sc('HITS:')}</b> 0\n"
+    txt += f"â–¸ <b>{sc('STATUS:')}</b> {sc('STARTING...')}\n"
     status_msg = bot.reply_to(message, txt, parse_mode="HTML")
 
     # Run checkout in mass pool
@@ -5320,20 +5320,20 @@ def _handle_ac_cards(message):
             st = result.get("status", "Error")
             err_code = result.get("error_code", "")
             if DEBUG:
-                print(f"[StripeAC] Card {idx+1}/{len(cards)}: {st} — {err_code} — {result.get('message','')[:100]}")
+                print(f"[StripeAC] Card {idx+1}/{len(cards)}: {st} â€” {err_code} â€” {result.get('message','')[:100]}")
 
-            # Session expired — stop all checks immediately
+            # Session expired â€” stop all checks immediately
             if err_code == "SESSION_EXPIRED":
                 errors += 1
                 try:
-                    exp_txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> ⚡\n"
-                    exp_txt += "━━━━━━━━━━━━━━━━━\n\n"
-                    exp_txt += f"⚠️ <b>{sc('SESSION EXPIRED')}</b>\n\n"
-                    exp_txt += f"▸ {sc('Checkout session is no longer active.')}\n"
-                    exp_txt += f"▸ {sc('Checked:')} {idx + 1}/{len(cards)}\n"
-                    exp_txt += f"▸ 💎 {sc('Charged:')} {hits}\n"
-                    exp_txt += f"▸ ❌ {sc('Declined:')} {declined}\n\n"
-                    exp_txt += f"▸ {sc('Please create a new checkout link and try again with /ac')}"
+                    exp_txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> âš¡\n"
+                    exp_txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+                    exp_txt += f"âš ï¸ <b>{sc('SESSION EXPIRED')}</b>\n\n"
+                    exp_txt += f"â–¸ {sc('Checkout session is no longer active.')}\n"
+                    exp_txt += f"â–¸ {sc('Checked:')} {idx + 1}/{len(cards)}\n"
+                    exp_txt += f"â–¸ ðŸ’Ž {sc('Charged:')} {hits}\n"
+                    exp_txt += f"â–¸ âŒ {sc('Declined:')} {declined}\n\n"
+                    exp_txt += f"â–¸ {sc('Please create a new checkout link and try again with /ac')}"
                     _safe_edit_message_text(exp_txt, cid, status_msg.message_id, parse_mode="HTML")
                 except Exception:
                     pass
@@ -5358,10 +5358,10 @@ def _handle_ac_cards(message):
                 # Send hit notification (Charged or 3DS Bypassed)
                 _bg_fire(_ac_send_hit, message, card, "CHARGED", result, product, amount_str, merchant)
             elif st == "Approved" and err_code == "3DS_CHALLENGE":
-                # 3DS bypass attempted but challenge required — cannot complete checkout
+                # 3DS bypass attempted but challenge required â€” cannot complete checkout
                 declined += 1
             elif st == "Approved":
-                # 3DS = card is live but not charged — count as declined
+                # 3DS = card is live but not charged â€” count as declined
                 declined += 1
             elif st == "Declined":
                 declined += 1
@@ -5371,22 +5371,22 @@ def _handle_ac_cards(message):
             # Update status every 2 cards or on last card or on hits
             if idx % 2 == 1 or idx == len(cards) - 1 or st == "Charged":
                 try:
-                    upd  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> ⚡\n"
-                    upd += "━━━━━━━━━━━━━━━━━\n\n"
-                    upd += f"▸ <b>{sc('PROGRESS:')}</b> {idx + 1}/{len(cards)}\n"
-                    upd += f"▸ <b>{sc('CHARGED:')}</b> 💎 {hits}\n"
-                    upd += f"▸ <b>{sc('DECLINED:')}</b> {declined}\n"
-                    upd += f"▸ <b>{sc('ERRORS:')}</b> {errors}\n"
-                    upd += f"▸ <b>{sc('STATUS:')}</b> {sc('CHECKING...')}\n"
+                    upd  = f"<b>{sc('STRIPE AUTO-CHECKOUT')}</b> âš¡\n"
+                    upd += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+                    upd += f"â–¸ <b>{sc('PROGRESS:')}</b> {idx + 1}/{len(cards)}\n"
+                    upd += f"â–¸ <b>{sc('CHARGED:')}</b> ðŸ’Ž {hits}\n"
+                    upd += f"â–¸ <b>{sc('DECLINED:')}</b> {declined}\n"
+                    upd += f"â–¸ <b>{sc('ERRORS:')}</b> {errors}\n"
+                    upd += f"â–¸ <b>{sc('STATUS:')}</b> {sc('CHECKING...')}\n"
                     _safe_edit_message_text(upd, cid, status_msg.message_id, parse_mode="HTML")
                 except Exception:
                     pass
 
-            # Delay between cards (kept short — session reuse makes fast iteration safe)
+            # Delay between cards (kept short â€” session reuse makes fast iteration safe)
             if idx < len(cards) - 1:
                 time.sleep(random.uniform(0.3, 0.8))
 
-        # ── Final summary ──
+        # â”€â”€ Final summary â”€â”€
         total_checked = hits + declined + errors
         refund = errors * CREDITS_PER_CHECK  # Refund errors
         if refund > 0 and not _is_owner:
@@ -5402,26 +5402,26 @@ def _handle_ac_cards(message):
         if hits > 0:
             increment_total_hits(uid, hits)
 
-        txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT COMPLETE')}</b> ⚡\n"
-        txt += "━━━━━━━━━━━━━━━━━\n\n"
-        txt += f"▸ <b>{sc('TOTAL:')}</b> {total_checked}/{len(cards)}\n"
-        txt += f"▸ <b>{sc('CHARGED:')}</b> 💎 {hits}\n"
-        txt += f"▸ <b>{sc('DECLINED:')}</b> ❌ {declined}\n"
-        txt += f"▸ <b>{sc('ERRORS:')}</b> ⚠️ {errors}\n"
+        txt  = f"<b>{sc('STRIPE AUTO-CHECKOUT COMPLETE')}</b> âš¡\n"
+        txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+        txt += f"â–¸ <b>{sc('TOTAL:')}</b> {total_checked}/{len(cards)}\n"
+        txt += f"â–¸ <b>{sc('CHARGED:')}</b> ðŸ’Ž {hits}\n"
+        txt += f"â–¸ <b>{sc('DECLINED:')}</b> âŒ {declined}\n"
+        txt += f"â–¸ <b>{sc('ERRORS:')}</b> âš ï¸ {errors}\n"
         if refund > 0:
-            txt += f"▸ <b>{sc('REFUNDED:')}</b> 💰 {refund} credits\n"
+            txt += f"â–¸ <b>{sc('REFUNDED:')}</b> ðŸ’° {refund} credits\n"
         txt += "\n"
-        txt += f"▸ <b>{sc('PRODUCT:')}</b> {_esc(product or 'N/A')}\n"
-        txt += f"▸ <b>{sc('AMOUNT:')}</b> {_esc(amount_str)}\n"
-        txt += f"\n▸ <b>" + sc("GATE:") + "</b> " + sc("STRIPE [AUTO-CHECKOUT]")
+        txt += f"â–¸ <b>{sc('PRODUCT:')}</b> {_esc(product or 'N/A')}\n"
+        txt += f"â–¸ <b>{sc('AMOUNT:')}</b> {_esc(amount_str)}\n"
+        txt += f"\nâ–¸ <b>" + sc("GATE:") + "</b> " + sc("STRIPE [AUTO-CHECKOUT]")
 
         # Show hit cards
         if hit_cards:
-            txt += "\n\n━━━━━━━━━━━━━━━━━\n"
+            txt += "\n\nâ”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n"
             txt += f"<b>{sc('CHARGED CARDS:')}</b>\n"
             for hcard, hresult in hit_cards:
                 hcode = hresult.get("error_code", "")
-                txt += f"💎 <code>{hcard}</code> — Charged ({hcode})\n"
+                txt += f"ðŸ’Ž <code>{hcard}</code> â€” Charged ({hcode})\n"
 
         _safe_edit_message_text(txt, cid, status_msg.message_id, parse_mode="HTML")
 
@@ -5436,38 +5436,38 @@ def _ac_send_hit(message, card_str, status_label, result, product, amount_str, m
     response = result.get("error_code", "") or result.get("message", "")
     site_label = merchant or "Stripe Checkout"
 
-    header = f"💎 <b>{sc('AC CHARGED')}</b> 💎"
+    header = f"ðŸ’Ž <b>{sc('AC CHARGED')}</b> ðŸ’Ž"
 
     txt  = f"{header}\n"
-    txt += "━━━━━━━━━━━━━━━━━\n\n"
-    txt += f"▸ <b>{sc('CARD:')}</b> <code>{card_str}</code>\n"
-    txt += f"▸ <b>{sc('STATUS:')}</b> {status_label}\n"
-    txt += f"▸ <b>{sc('RESPONSE:')}</b> {_esc(response)}\n"
-    txt += f"▸ <b>{sc('MERCHANT:')}</b> {_esc(site_label)}\n"
-    txt += f"▸ <b>{sc('PRODUCT:')}</b> {_esc(product or 'N/A')}\n"
-    txt += f"▸ <b>{sc('AMOUNT:')}</b> {_esc(amount_str)}\n"
-    txt += f"▸ <b>{sc('SOURCE:')}</b> Auto-Checkout\n\n"
-    txt += f"👤 <b>{sc('USER:')}</b> {name}"
+    txt += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+    txt += f"â–¸ <b>{sc('CARD:')}</b> <code>{card_str}</code>\n"
+    txt += f"â–¸ <b>{sc('STATUS:')}</b> {status_label}\n"
+    txt += f"â–¸ <b>{sc('RESPONSE:')}</b> {_esc(response)}\n"
+    txt += f"â–¸ <b>{sc('MERCHANT:')}</b> {_esc(site_label)}\n"
+    txt += f"â–¸ <b>{sc('PRODUCT:')}</b> {_esc(product or 'N/A')}\n"
+    txt += f"â–¸ <b>{sc('AMOUNT:')}</b> {_esc(amount_str)}\n"
+    txt += f"â–¸ <b>{sc('SOURCE:')}</b> Auto-Checkout\n\n"
+    txt += f"ðŸ‘¤ <b>{sc('USER:')}</b> {name}"
 
     # Hits group
     if SHIRO_HITS_CHAT:
         try:
             bot.send_message(SHIRO_HITS_CHAT, txt, parse_mode="HTML")
         except Exception as e:
-            print(f"[AC HIT] ⚠️ Failed to send to hits chat: {e}")
+            print(f"[AC HIT] âš ï¸ Failed to send to hits chat: {e}")
 
     # Support group
     if AUTO_JOIN_GROUP:
         try:
-            hit_txt  = f"💎 <b>{sc('CHARGE HIT DETECTED')}</b> 💎\n\n"
-            hit_txt += f"{sc('STATUS')}  ➜  <b>{status_label}</b>\n"
-            hit_txt += f"{sc('RESPONSE')}  ➜  <b>{_esc(response)}</b>\n"
-            hit_txt += f"{sc('GATEWAY')}  ➜  <b>Stripe AC</b>\n"
-            hit_txt += f"{sc('PRICE')}  ➜  <b>{_esc(amount_str)}</b>\n\n"
-            hit_txt += f"👤 {sc('USER')}  ➜  <b>{name}</b>"
+            hit_txt  = f"ðŸ’Ž <b>{sc('CHARGE HIT DETECTED')}</b> ðŸ’Ž\n\n"
+            hit_txt += f"{sc('STATUS')}  âžœ  <b>{status_label}</b>\n"
+            hit_txt += f"{sc('RESPONSE')}  âžœ  <b>{_esc(response)}</b>\n"
+            hit_txt += f"{sc('GATEWAY')}  âžœ  <b>Stripe AC</b>\n"
+            hit_txt += f"{sc('PRICE')}  âžœ  <b>{_esc(amount_str)}</b>\n\n"
+            hit_txt += f"ðŸ‘¤ {sc('USER')}  âžœ  <b>{name}</b>"
             bot.send_message(AUTO_JOIN_GROUP, hit_txt, parse_mode="HTML")
         except Exception as e:
-            print(f"[AC HIT] ⚠️ Failed to send hit to {AUTO_JOIN_GROUP}: {e}")
+            print(f"[AC HIT] âš ï¸ Failed to send hit to {AUTO_JOIN_GROUP}: {e}")
 
 
 @bot.message_handler(commands=["msh"])
@@ -5514,9 +5514,9 @@ def cmd_mbt(message):
     )
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  /mst — Stripe Charge Mass Check
-# ═══════════════════════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+#  /mst â€” Stripe Charge Mass Check
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 @bot.message_handler(commands=["mst"])
 @_crash_safe
@@ -5529,13 +5529,13 @@ def cmd_mst(message):
         return
     update_user_activity(uid, username=getattr(message.from_user, 'username', None))
     if not _HAS_ST:
-        bot.reply_to(message, "❌ Stripe Charge API not available.")
+        bot.reply_to(message, "âŒ Stripe Charge API not available.")
         return
     proxies = get_proxies(cid)
     if uid and cid != uid and not proxies:
         proxies = get_proxies(uid)
     if not proxies:
-        bot.reply_to(message, "⚠️ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid rate limits.", parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid rate limits.", parse_mode="HTML")
         return
     pending_mst[cid] = time.time()
     bot.reply_to(
@@ -5562,15 +5562,15 @@ def _run_st_mass_inner(message, cid, uid, cards, proxies, _is_owner):
     def _st_mass_kb(final=False):
         kb = types.InlineKeyboardMarkup(row_width=4)
         kb.row(
-            types.InlineKeyboardButton(f"💎 Charged · {charged}", callback_data="msh_noop"),
-            types.InlineKeyboardButton(f"✅ Approved · {approved}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"ðŸ’Ž Charged Â· {charged}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âœ… Approved Â· {approved}", callback_data="msh_noop"),
         )
         kb.row(
-            types.InlineKeyboardButton(f"❌ Declined · {declined}", callback_data="msh_noop"),
-            types.InlineKeyboardButton(f"⚠️ Errors · {errors}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âŒ Declined Â· {declined}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âš ï¸ Errors Â· {errors}", callback_data="msh_noop"),
         )
         if not final:
-            kb.row(types.InlineKeyboardButton("🛑 Stop Check", callback_data=f"msh_stop_{cid}"))
+            kb.row(types.InlineKeyboardButton("ðŸ›‘ Stop Check", callback_data=f"msh_stop_{cid}"))
         return kb
 
     def _st_mass_text(final=False):
@@ -5581,40 +5581,40 @@ def _run_st_mass_inner(message, cid, uid, cards, proxies, _is_owner):
         pct = (100.0 * done / total) if total else 0.0
         bar_len = 20
         filled = int(bar_len * done / total) if total else 0
-        bar = "█" * filled + "░" * (bar_len - filled)
+        bar = "â–ˆ" * filled + "â–‘" * (bar_len - filled)
         speed = done / elapsed if elapsed > 0 else 0.0
         speed_str = f"{speed:.2f}" if speed < 1 else f"{speed:.1f}"
-        _spin = "◐◓◑◒"
-        spin = _spin[done % len(_spin)] if not final else "✅"
+        _spin = "â—â—“â—‘â—’"
+        spin = _spin[done % len(_spin)] if not final else "âœ…"
 
-        txt = f"⚡ <b>{sc('STRIPE CHARGE MASS CHECK')}</b>\n\n"
+        txt = f"âš¡ <b>{sc('STRIPE CHARGE MASS CHECK')}</b>\n\n"
         if final:
             hits = charged + approved
             hit_rate = (hits / done * 100) if done > 0 else 0.0
-            txt += f"✅ <b>{sc('COMPLETED')}</b>\n"
-            txt += f"<code>▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰</code> <b>100%</b>\n\n"
-            txt += f"📊 <b>STATISTICS</b>\n"
-            txt += f"Cards    · <code>{done}/{total}</code>\n"
-            txt += f"Time     · <code>{time_str}</code>\n"
-            txt += f"Speed    · <code>{speed_str} c/s</code>\n"
-            txt += f"Hit Rate · <b>{hit_rate:.1f}%</b>\n\n"
-            txt += f"⚙️ {sc('STRIPE CHARGE [MASS]')}  ·  {sc('SHIRO')} ⚡"
+            txt += f"âœ… <b>{sc('COMPLETED')}</b>\n"
+            txt += f"<code>â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°</code> <b>100%</b>\n\n"
+            txt += f"ðŸ“Š <b>STATISTICS</b>\n"
+            txt += f"Cards    Â· <code>{done}/{total}</code>\n"
+            txt += f"Time     Â· <code>{time_str}</code>\n"
+            txt += f"Speed    Â· <code>{speed_str} c/s</code>\n"
+            txt += f"Hit Rate Â· <b>{hit_rate:.1f}%</b>\n\n"
+            txt += f"âš™ï¸ {sc('STRIPE CHARGE [MASS]')}  Â·  {sc('SHIRO')} âš¡"
         else:
             txt += f"{spin} <b>{sc('PROCESSING')}</b>\n"
             txt += f"<code>{bar}</code> <b>{pct:.0f}%</b>\n\n"
-            txt += f"📊 <b>PROGRESS</b>\n"
-            txt += f"Cards · <code>{done}/{total}</code>\n"
-            txt += f"Time  · <code>{time_str}</code>\n"
+            txt += f"ðŸ“Š <b>PROGRESS</b>\n"
+            txt += f"Cards Â· <code>{done}/{total}</code>\n"
+            txt += f"Time  Â· <code>{time_str}</code>\n"
             if speed > 0:
                 remaining = (total - done) / speed
                 r_mins, r_secs = divmod(int(remaining), 60)
                 eta = f"{r_mins}:{r_secs:02d}" if r_mins else f"0:{r_secs:02d}"
-                txt += f"Speed · <code>{speed_str} c/s</code>\n"
-                txt += f"ETA   · <code>{eta}</code>\n"
+                txt += f"Speed Â· <code>{speed_str} c/s</code>\n"
+                txt += f"ETA   Â· <code>{eta}</code>\n"
             else:
-                txt += f"Status · {sc('STARTING...')}\n"
-            txt += f"\n💎 <b>{charged}</b>  ✅ <b>{approved}</b>  ❌ <b>{declined}</b>  ⚠️ <b>{errors}</b>\n\n"
-            txt += f"⚙️ {sc('STRIPE CHARGE [MASS]')}"
+                txt += f"Status Â· {sc('STARTING...')}\n"
+            txt += f"\nðŸ’Ž <b>{charged}</b>  âœ… <b>{approved}</b>  âŒ <b>{declined}</b>  âš ï¸ <b>{errors}</b>\n\n"
+            txt += f"âš™ï¸ {sc('STRIPE CHARGE [MASS]')}"
         return txt
 
     status_msg = bot.reply_to(message, _st_mass_text(), parse_mode="HTML", reply_markup=_st_mass_kb())
@@ -5704,49 +5704,49 @@ def _run_st_mass_inner(message, cid, uid, cards, proxies, _is_owner):
     f_time = f"{mins}:{secs:02d}" if mins else f"0:{secs:02d}"
 
     file_lines = []
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    file_lines.append("     ⚡ STRIPE CHARGE MASS RESULTS")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+    file_lines.append("     âš¡ STRIPE CHARGE MASS RESULTS")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
     file_lines.append(f"  Total: {done}  |  Time: {f_time}")
-    file_lines.append(f"  🔥 Charged: {charged}  ✅ Approved: {approved}")
-    file_lines.append(f"  ❌ Declined: {declined}  ⚠️ Errors: {errors}")
-    file_lines.append(f"  🎯 Hit Rate: {hit_rate:.1f}%")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    file_lines.append(f"  ðŸ”¥ Charged: {charged}  âœ… Approved: {approved}")
+    file_lines.append(f"  âŒ Declined: {declined}  âš ï¸ Errors: {errors}")
+    file_lines.append(f"  ðŸŽ¯ Hit Rate: {hit_rate:.1f}%")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
     file_lines.append("")
     if charged_cards:
-        file_lines.append("           🔥  CHARGED")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("           ðŸ”¥  CHARGED")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in charged_cards:
             file_lines.append(f"  {c}")
         file_lines.append("")
     if approved_cards:
-        file_lines.append("           ✅  APPROVED")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("           âœ…  APPROVED")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in approved_cards:
             file_lines.append(f"  {c}")
         file_lines.append("")
     if declined_cards:
-        file_lines.append("           ❌  DECLINED")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("           âŒ  DECLINED")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in declined_cards:
             file_lines.append(f"  {c}")
         file_lines.append("")
     if error_cards:
-        file_lines.append("           ⚠️  ERRORS")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("           âš ï¸  ERRORS")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in error_cards:
             file_lines.append(f"  {c}")
         file_lines.append("")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    file_lines.append("        Powered by Shiro ⚡")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+    file_lines.append("        Powered by Shiro âš¡")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
 
     file_content = "\n".join(file_lines)
     f_buf = io.BytesIO(file_content.encode("utf-8"))
     f_buf.name = f"stripe_mass_{done}cards.txt"
 
-    _cap  = f"⚡ <b>{sc('STRIPE CHARGE RESULTS')}</b>\n"
-    _cap += f"💎 <b>{charged}</b>  ✅ <b>{approved}</b>  ❌ {declined}  ⚠️ {errors}  ·  🎯 {hit_rate:.1f}%  ·  ⏱ {f_time}"
+    _cap  = f"âš¡ <b>{sc('STRIPE CHARGE RESULTS')}</b>\n"
+    _cap += f"ðŸ’Ž <b>{charged}</b>  âœ… <b>{approved}</b>  âŒ {declined}  âš ï¸ {errors}  Â·  ðŸŽ¯ {hit_rate:.1f}%  Â·  â± {f_time}"
     try:
         bot.send_document(cid, f_buf, caption=_cap, parse_mode="HTML")
     except Exception:
@@ -5784,11 +5784,11 @@ def handle_cards_or_sets(message):
         if not raw:
             bot.reply_to(message, "No valid site URLs.")
             return
-        status_msg = bot.reply_to(message, "🔍 Testing sites with test card...")
+        status_msg = bot.reply_to(message, "ðŸ” Testing sites with test card...")
         working, dead = _test_and_save_sites(cid, raw, status_msg)
-        out = f"✅ Saved <b>{len(working)}</b> working site(s)."
+        out = f"âœ… Saved <b>{len(working)}</b> working site(s)."
         if dead:
-            out += f"\n❌ {len(dead)} dead: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
+            out += f"\nâŒ {len(dead)} dead: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
             if len(dead) > 5:
                 out += f" +{len(dead)-5} more"
         bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
@@ -5799,43 +5799,43 @@ def handle_cards_or_sets(message):
         if not lines:
             bot.reply_to(message, "No valid proxies.")
             return
-        status_msg = bot.reply_to(message, "🔍 Testing proxies...")
+        status_msg = bot.reply_to(message, "ðŸ” Testing proxies...")
         working_urls, failed = _test_and_save_proxies(cid, lines, status_msg)
         sc = _to_bold_sans
         proxy_lines = [f"  <code>{_proxy_display_name(p)}</code>" for p in working_urls[:15]]
         if len(working_urls) > 15:
             proxy_lines.append(f"  ... +{len(working_urls) - 15} more")
-        out  = f"<b>{sc('PROXY SETUP')}</b> 🔗\n"
-        out += "━━━━━━━━━━━━━━━━━\n\n"
-        out += f"▸ <b>{sc('STATUS:')}</b> ✅ {sc('SAVED')}\n"
-        out += f"▸ <b>{sc('WORKING:')}</b> {len(working_urls)}\n"
+        out  = f"<b>{sc('PROXY SETUP')}</b> ðŸ”—\n"
+        out += "â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”\n\n"
+        out += f"â–¸ <b>{sc('STATUS:')}</b> âœ… {sc('SAVED')}\n"
+        out += f"â–¸ <b>{sc('WORKING:')}</b> {len(working_urls)}\n"
         if failed:
-            out += f"▸ <b>{sc('FAILED:')}</b> {failed}\n"
+            out += f"â–¸ <b>{sc('FAILED:')}</b> {failed}\n"
         out += f"\n<b>{sc('PROXIES:')}</b>\n" + "\n".join(proxy_lines)
         bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
         _discord_proxies_set(message, working_urls)
         return
-    # ── Braintree site input ──
+    # â”€â”€ Braintree site input â”€â”€
     if message.text and cid in pending_bt_sites:
         del pending_bt_sites[cid]
         raw = [x.strip() for x in (message.text or "").split("\n") if x.strip()]
         if not raw:
             bot.reply_to(message, "No valid site URLs.")
             return
-        status_msg = bot.reply_to(message, "🔍 Testing BT sites...")
+        status_msg = bot.reply_to(message, "ðŸ” Testing BT sites...")
         working, dead = _test_and_save_bt_sites(cid, raw, status_msg)
-        out = f"✅ Saved <b>{len(working)}</b> working Braintree site(s)."
+        out = f"âœ… Saved <b>{len(working)}</b> working Braintree site(s)."
         if dead:
-            out += f"\n❌ {len(dead)} failed: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
+            out += f"\nâŒ {len(dead)} failed: " + ", ".join([s.replace("https://", "").replace("http://", "").split("/")[0] for s in dead[:5]])
             if len(dead) > 5:
                 out += f" +{len(dead)-5} more"
         bot.edit_message_text(out, cid, status_msg.message_id, parse_mode="HTML")
         return
-    # ── Auto-Checkout: waiting for Stripe Checkout link ──
+    # â”€â”€ Auto-Checkout: waiting for Stripe Checkout link â”€â”€
     if message.text and cid in pending_ac_link:
         _handle_ac_link(message)
         return
-    # ── Auto-Checkout: waiting for cards ──
+    # â”€â”€ Auto-Checkout: waiting for cards â”€â”€
     if message.text and cid in pending_ac_cards:
         _handle_ac_cards(message)
         return
@@ -5901,17 +5901,17 @@ def handle_cards_or_sets(message):
         else:
             _invalid_count += 1
     if _invalid_count > 0 and not _valid_cards:
-        bot.reply_to(message, f"❌ All {_invalid_count} card(s) failed validation (Luhn/format/expiry). No credits deducted.")
+        bot.reply_to(message, f"âŒ All {_invalid_count} card(s) failed validation (Luhn/format/expiry). No credits deducted.")
         return
     if _invalid_count > 0:
-        bot.reply_to(message, f"⚠️ Skipped {_invalid_count} invalid card(s) (Luhn/format/expiry). Checking {len(_valid_cards)} valid card(s).")
+        bot.reply_to(message, f"âš ï¸ Skipped {_invalid_count} invalid card(s) (Luhn/format/expiry). Checking {len(_valid_cards)} valid card(s).")
     cards = _valid_cards
     uid = getattr(message.from_user, "id", None)
     _udata = _get_cached_user_data(uid) if uid else None
     if not uid or _udata is None:
         bot.reply_to(message, "Register first to use the bot.", parse_mode="HTML")
         return
-    _is_owner = (uid == OWNER_ID)
+    _is_owner = (uid in OWNER_IDS)
     _has_plan = _user_has_active_plan(uid)
     if not _is_owner and not _has_plan:
         cards = cards[:MASS_MAX_CARDS]
@@ -5930,7 +5930,7 @@ def handle_cards_or_sets(message):
         if uid and cid != uid and not proxies:
             proxies = get_proxies(uid)
         if not proxies:
-            bot.reply_to(message, "⚠️ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid rate limits.", parse_mode="HTML")
+            bot.reply_to(message, "âš ï¸ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid rate limits.", parse_mode="HTML")
             # Refund credits
             if not _is_owner and not _has_plan:
                 coll = _users_coll()
@@ -5938,14 +5938,14 @@ def handle_cards_or_sets(message):
                     coll.update_one({"_id": uid}, {"$inc": {"credits": need_credits}})
                     _invalidate_user_cache(uid)
             return
-        status_msg = bot.reply_to(message, f"⚡ Starting Stripe Charge mass check: {len(cards)} cards", parse_mode="HTML")
+        status_msg = bot.reply_to(message, f"âš¡ Starting Stripe Charge mass check: {len(cards)} cards", parse_mode="HTML")
         def _run_st_mass():
             try:
                 _run_st_mass_inner(message, cid, uid, cards, proxies, _is_owner)
             except Exception as e:
                 log.error('StMass', f'Mass check crashed: {e}')
                 try:
-                    bot.send_message(cid, f"❌ Mass check error: {str(e)[:200]}")
+                    bot.send_message(cid, f"âŒ Mass check error: {str(e)[:200]}")
                 except Exception:
                     pass
         _mass_pool.submit(_run_st_mass)
@@ -5966,19 +5966,19 @@ def handle_cards_or_sets(message):
             bot.reply_to(message, "No sites. <code>/setsite</code> to add.", parse_mode="HTML")
         return
     if not proxies:
-        bot.reply_to(message, "⚠️ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid CAPTCHA and bans.", parse_mode="HTML")
+        bot.reply_to(message, "âš ï¸ <b>Proxies required.</b> Add proxies first using <code>/setproxies</code> to avoid CAPTCHA and bans.", parse_mode="HTML")
         return
 
     if _is_bt_mass:
         _mass_pool.submit(_run_bt_mass_check_body, message, cid, uid, cards, sites, proxies, _is_owner)
     else:
-        # ── Launch mass check in a background thread to free handler thread ──
+        # â”€â”€ Launch mass check in a background thread to free handler thread â”€â”€
         # This prevents /msh from blocking the Telegram handler pool (num_threads=16).
         # Other commands (/stop, /start, menu) stay responsive even during 5+ concurrent mass checks.
         _mass_pool.submit(_run_mass_check_body, message, cid, uid, cards, sites, proxies, _is_owner)
 
 
-# ── Dedicated mass check executor pool (separate from 5-thread _bg_pool) ──
+# â”€â”€ Dedicated mass check executor pool (separate from 5-thread _bg_pool) â”€â”€
 _mass_pool = ThreadPoolExecutor(max_workers=10, thread_name_prefix="mass")
 
 
@@ -5990,7 +5990,7 @@ def _run_bt_mass_check_body(message, cid, uid, cards, bt_sites, proxies, _is_own
         if DEBUG:
             traceback.print_exc()
         try:
-            bot.send_message(cid, f"⚠️ BT mass check error: {str(e)[:200]}", parse_mode="HTML")
+            bot.send_message(cid, f"âš ï¸ BT mass check error: {str(e)[:200]}", parse_mode="HTML")
         except Exception:
             pass
 
@@ -6014,15 +6014,15 @@ def _run_bt_mass_check_inner(message, cid, uid, cards, bt_sites, proxies, _is_ow
     def _bt_status_kb(final=False):
         kb = types.InlineKeyboardMarkup(row_width=4)
         kb.row(
-            types.InlineKeyboardButton(f"💎 Charged · {charged}", callback_data="msh_noop"),
-            types.InlineKeyboardButton(f"✅ Approved · {approved}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"ðŸ’Ž Charged Â· {charged}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âœ… Approved Â· {approved}", callback_data="msh_noop"),
         )
         kb.row(
-            types.InlineKeyboardButton(f"❌ Declined · {declined}", callback_data="msh_noop"),
-            types.InlineKeyboardButton(f"⚠️ Errors · {errors}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âŒ Declined Â· {declined}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âš ï¸ Errors Â· {errors}", callback_data="msh_noop"),
         )
         if not final:
-            kb.row(types.InlineKeyboardButton("🛑 Stop Check", callback_data=f"msh_stop_{cid}"))
+            kb.row(types.InlineKeyboardButton("ðŸ›‘ Stop Check", callback_data=f"msh_stop_{cid}"))
         return kb
 
     def _bt_status_text(final=False):
@@ -6032,40 +6032,40 @@ def _run_bt_mass_check_inner(message, cid, uid, cards, bt_sites, proxies, _is_ow
         pct = (100.0 * checked / total) if total else 0.0
         bar_len = 20
         filled = int(bar_len * checked / total) if total else 0
-        bar = "█" * filled + "░" * (bar_len - filled)
+        bar = "â–ˆ" * filled + "â–‘" * (bar_len - filled)
         speed = checked / elapsed if elapsed > 0 else 0.0
         speed_str = f"{speed:.2f}" if speed < 1 else f"{speed:.1f}"
-        _spin = "◐◓◑◒"
-        spin = _spin[checked % len(_spin)] if not final else "✅"
+        _spin = "â—â—“â—‘â—’"
+        spin = _spin[checked % len(_spin)] if not final else "âœ…"
 
-        txt  = f"🔷 <b>{sc('BRAINTREE MASS CHECK')}</b>\n\n"
+        txt  = f"ðŸ”· <b>{sc('BRAINTREE MASS CHECK')}</b>\n\n"
         if final:
             hits = charged + approved
             hit_rate = (hits / checked * 100) if checked > 0 else 0.0
-            txt += f"✅ <b>{sc('COMPLETED')}</b>\n"
-            txt += f"<code>▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰</code> <b>100%</b>\n\n"
-            txt += f"📊 <b>STATISTICS</b>\n"
-            txt += f"Cards    · <code>{checked}/{total}</code>\n"
-            txt += f"Time     · <code>{time_str}</code>\n"
-            txt += f"Speed    · <code>{speed_str} c/s</code>\n"
-            txt += f"Hit Rate · <b>{hit_rate:.1f}%</b>\n\n"
-            txt += f"⚙️ {sc('BRAINTREE [MASS]')}  ·  {sc('SHIRO')} ⚡"
+            txt += f"âœ… <b>{sc('COMPLETED')}</b>\n"
+            txt += f"<code>â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°</code> <b>100%</b>\n\n"
+            txt += f"ðŸ“Š <b>STATISTICS</b>\n"
+            txt += f"Cards    Â· <code>{checked}/{total}</code>\n"
+            txt += f"Time     Â· <code>{time_str}</code>\n"
+            txt += f"Speed    Â· <code>{speed_str} c/s</code>\n"
+            txt += f"Hit Rate Â· <b>{hit_rate:.1f}%</b>\n\n"
+            txt += f"âš™ï¸ {sc('BRAINTREE [MASS]')}  Â·  {sc('SHIRO')} âš¡"
         else:
             txt += f"{spin} <b>{sc('PROCESSING')}</b>\n"
             txt += f"<code>{bar}</code> <b>{pct:.0f}%</b>\n\n"
-            txt += f"📊 <b>PROGRESS</b>\n"
-            txt += f"Cards · <code>{checked}/{total}</code>\n"
-            txt += f"Time  · <code>{time_str}</code>\n"
+            txt += f"ðŸ“Š <b>PROGRESS</b>\n"
+            txt += f"Cards Â· <code>{checked}/{total}</code>\n"
+            txt += f"Time  Â· <code>{time_str}</code>\n"
             if speed > 0:
                 remaining = (total - checked) / speed
                 r_mins, r_secs = divmod(int(remaining), 60)
                 eta = f"{r_mins}:{r_secs:02d}" if r_mins else f"0:{r_secs:02d}"
-                txt += f"Speed · <code>{speed_str} c/s</code>\n"
-                txt += f"ETA   · <code>{eta}</code>\n"
+                txt += f"Speed Â· <code>{speed_str} c/s</code>\n"
+                txt += f"ETA   Â· <code>{eta}</code>\n"
             else:
-                txt += f"Status · {sc('STARTING...')}\n"
-            txt += f"\n💎 <b>{charged}</b>  ✅ <b>{approved}</b>  ❌ <b>{declined}</b>  ⚠️ <b>{errors}</b>\n\n"
-            txt += f"⚙️ {sc('BRAINTREE [MASS]')}"
+                txt += f"Status Â· {sc('STARTING...')}\n"
+            txt += f"\nðŸ’Ž <b>{charged}</b>  âœ… <b>{approved}</b>  âŒ <b>{declined}</b>  âš ï¸ <b>{errors}</b>\n\n"
+            txt += f"âš™ï¸ {sc('BRAINTREE [MASS]')}"
         return txt
 
     status_msg = bot.reply_to(message, _bt_status_text(), parse_mode="HTML", reply_markup=_bt_status_kb())
@@ -6170,74 +6170,74 @@ def _run_bt_mass_check_inner(message, cid, uid, cards, bt_sites, proxies, _is_ow
         f_hit_rate = (f_hits / checked * 100) if checked > 0 else 0
 
         file_lines = []
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        file_lines.append("     🔷  BRAINTREE MASS CHECK  🔷")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+        file_lines.append("     ðŸ”·  BRAINTREE MASS CHECK  ðŸ”·")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         file_lines.append("")
-        file_lines.append("  📊  STATISTICS")
-        file_lines.append(f"  ├ Total      ·  {checked}/{total}")
-        file_lines.append(f"  ├ Time       ·  {f_time}")
-        file_lines.append(f"  ├ Speed      ·  {f_speed_str} c/s")
-        file_lines.append(f"  └ Hit Rate   ·  {f_hit_rate:.1f}%")
+        file_lines.append("  ðŸ“Š  STATISTICS")
+        file_lines.append(f"  â”œ Total      Â·  {checked}/{total}")
+        file_lines.append(f"  â”œ Time       Â·  {f_time}")
+        file_lines.append(f"  â”œ Speed      Â·  {f_speed_str} c/s")
+        file_lines.append(f"  â”” Hit Rate   Â·  {f_hit_rate:.1f}%")
         file_lines.append("")
-        file_lines.append("  📋  RESULTS")
-        file_lines.append(f"  ├ 💎 Charged    ·  {charged}")
-        file_lines.append(f"  ├ ✅ Approved   ·  {approved}")
-        file_lines.append(f"  ├ ❌ Declined   ·  {declined}")
-        file_lines.append(f"  └ ⚠️ Errors     ·  {errors}")
+        file_lines.append("  ðŸ“‹  RESULTS")
+        file_lines.append(f"  â”œ ðŸ’Ž Charged    Â·  {charged}")
+        file_lines.append(f"  â”œ âœ… Approved   Â·  {approved}")
+        file_lines.append(f"  â”œ âŒ Declined   Â·  {declined}")
+        file_lines.append(f"  â”” âš ï¸ Errors     Â·  {errors}")
         if errors > 0 and not _is_owner:
-            file_lines.append(f"\n  💰 Refunded    ·  {errors} credit(s)")
+            file_lines.append(f"\n  ðŸ’° Refunded    Â·  {errors} credit(s)")
         file_lines.append("")
         
         if charged_cards:
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            file_lines.append("           💎  CHARGED")
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+            file_lines.append("           ðŸ’Ž  CHARGED")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
             for c in charged_cards:
                 file_lines.append(f"  {c}")
             file_lines.append("")
         
         if approved_cards:
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            file_lines.append("           ✅  APPROVED")
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+            file_lines.append("           âœ…  APPROVED")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
             for c in approved_cards:
                 file_lines.append(f"  {c}")
             file_lines.append("")
         
         if declined_cards:
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            file_lines.append("           ❌  DECLINED")
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+            file_lines.append("           âŒ  DECLINED")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
             for c in declined_cards:
                 file_lines.append(f"  {c}")
             file_lines.append("")
         
         if error_cards:
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-            file_lines.append("           ⚠️  ERRORS")
-            file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+            file_lines.append("           âš ï¸  ERRORS")
+            file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
             for c in error_cards:
                 file_lines.append(f"  {c}")
             file_lines.append("")
         
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        file_lines.append("        Powered by Shiro ⚡")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+        file_lines.append("        Powered by Shiro âš¡")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
 
         file_content = "\n".join(file_lines)
         f_buf = io.BytesIO(file_content.encode("utf-8"))
         f_buf.name = f"braintree_mass_{total}cards.txt"
         
         sc = _to_bold_sans
-        _cap  = f"🔷 <b>{sc('BRAINTREE RESULTS')}</b>\n"
-        _cap += f"💎 <b>{charged}</b>  ✅ <b>{approved}</b>  ❌ {declined}  ⚠️ {errors}  ·  🎯 {f_hit_rate:.1f}%  ·  ⏱ {f_time}"
+        _cap  = f"ðŸ”· <b>{sc('BRAINTREE RESULTS')}</b>\n"
+        _cap += f"ðŸ’Ž <b>{charged}</b>  âœ… <b>{approved}</b>  âŒ {declined}  âš ï¸ {errors}  Â·  ðŸŽ¯ {f_hit_rate:.1f}%  Â·  â± {f_time}"
         bot.send_document(cid, f_buf, caption=_cap, parse_mode="HTML")
     except Exception:
         pass
 
 def _run_mass_check_body(message, cid, uid, cards, sites, proxies, _is_owner):
-    """Run the entire mass check in a background thread — frees Telegram handler instantly."""
+    """Run the entire mass check in a background thread â€” frees Telegram handler instantly."""
     try:
         _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner)
     except Exception as e:
@@ -6245,7 +6245,7 @@ def _run_mass_check_body(message, cid, uid, cards, sites, proxies, _is_owner):
             import traceback
             traceback.print_exc()
         try:
-            bot.send_message(cid, f"⚠️ Mass check error: {str(e)[:200]}", parse_mode="HTML")
+            bot.send_message(cid, f"âš ï¸ Mass check error: {str(e)[:200]}", parse_mode="HTML")
         except Exception:
             pass
 
@@ -6265,23 +6265,23 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
     approved_cards = []
     declined_cards = []
     error_cards = []
-    _hit_count = [0]  # accumulated hits — written to DB once at end (avoids per-hit DB call)
+    _hit_count = [0]  # accumulated hits â€” written to DB once at end (avoids per-hit DB call)
 
     _check_start_time = time.time()
 
     def _mass_status_kb(final=False):
-        """Build inline keyboard for mass-check — compact premium layout."""
+        """Build inline keyboard for mass-check â€” compact premium layout."""
         kb = types.InlineKeyboardMarkup(row_width=4)
         kb.row(
-            types.InlineKeyboardButton(f"💎 Charged · {charged}", callback_data="msh_noop"),
-            types.InlineKeyboardButton(f"✅ Approved · {approved}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"ðŸ’Ž Charged Â· {charged}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âœ… Approved Â· {approved}", callback_data="msh_noop"),
         )
         kb.row(
-            types.InlineKeyboardButton(f"❌ Declined · {declined}", callback_data="msh_noop"),
-            types.InlineKeyboardButton(f"⚠️ Errors · {errors}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âŒ Declined Â· {declined}", callback_data="msh_noop"),
+            types.InlineKeyboardButton(f"âš ï¸ Errors Â· {errors}", callback_data="msh_noop"),
         )
         if not final:
-            kb.row(types.InlineKeyboardButton("🛑 Stop Check", callback_data=f"msh_stop_{cid}"))
+            kb.row(types.InlineKeyboardButton("ðŸ›‘ Stop Check", callback_data=f"msh_stop_{cid}"))
         return kb
 
     def _mass_status_text(final=False):
@@ -6294,44 +6294,44 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
         pct = (100.0 * checked / total) if total else 0.0
         bar_len = 20
         filled = int(bar_len * checked / total) if total else 0
-        bar = "█" * filled + "░" * (bar_len - filled)
+        bar = "â–ˆ" * filled + "â–‘" * (bar_len - filled)
 
         speed = checked / elapsed if elapsed > 0 else 0.0
         speed_str = f"{speed:.2f}" if speed < 1 else f"{speed:.1f}"
 
         # Spinner
-        _spin = "◐◓◑◒"
-        spin = _spin[checked % len(_spin)] if not final else "✅"
+        _spin = "â—â—“â—‘â—’"
+        spin = _spin[checked % len(_spin)] if not final else "âœ…"
 
-        txt  = f"⚡ <b>{sc('SHIRO MASS CHECK')}</b>\n\n"
+        txt  = f"âš¡ <b>{sc('SHIRO MASS CHECK')}</b>\n\n"
 
         if final:
             hits = charged + approved
             hit_rate = (hits / checked * 100) if checked > 0 else 0.0
-            txt += f"✅ <b>{sc('COMPLETED')}</b>\n"
-            txt += f"<code>▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰</code> <b>100%</b>\n\n"
-            txt += f"📊 <b>STATISTICS</b>\n"
-            txt += f"Cards    · <code>{checked}/{total}</code>\n"
-            txt += f"Time     · <code>{time_str}</code>\n"
-            txt += f"Speed    · <code>{speed_str} c/s</code>\n"
-            txt += f"Hit Rate · <b>{hit_rate:.1f}%</b>\n\n"
-            txt += f"⚙️ {sc('SHOPIFY [MASS]')}  ·  {sc('SHIRO')} ⚡"
+            txt += f"âœ… <b>{sc('COMPLETED')}</b>\n"
+            txt += f"<code>â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°â–°</code> <b>100%</b>\n\n"
+            txt += f"ðŸ“Š <b>STATISTICS</b>\n"
+            txt += f"Cards    Â· <code>{checked}/{total}</code>\n"
+            txt += f"Time     Â· <code>{time_str}</code>\n"
+            txt += f"Speed    Â· <code>{speed_str} c/s</code>\n"
+            txt += f"Hit Rate Â· <b>{hit_rate:.1f}%</b>\n\n"
+            txt += f"âš™ï¸ {sc('SHOPIFY [MASS]')}  Â·  {sc('SHIRO')} âš¡"
         else:
             txt += f"{spin} <b>{sc('PROCESSING')}</b>\n"
             txt += f"<code>{bar}</code> <b>{pct:.0f}%</b>\n\n"
-            txt += f"📊 <b>PROGRESS</b>\n"
-            txt += f"Cards · <code>{checked}/{total}</code>\n"
-            txt += f"Time  · <code>{time_str}</code>\n"
+            txt += f"ðŸ“Š <b>PROGRESS</b>\n"
+            txt += f"Cards Â· <code>{checked}/{total}</code>\n"
+            txt += f"Time  Â· <code>{time_str}</code>\n"
             if speed > 0:
                 remaining = (total - checked) / speed
                 r_mins, r_secs = divmod(int(remaining), 60)
                 eta = f"{r_mins}:{r_secs:02d}" if r_mins else f"0:{r_secs:02d}"
-                txt += f"Speed · <code>{speed_str} c/s</code>\n"
-                txt += f"ETA   · <code>{eta}</code>\n"
+                txt += f"Speed Â· <code>{speed_str} c/s</code>\n"
+                txt += f"ETA   Â· <code>{eta}</code>\n"
             else:
-                txt += f"Status · {sc('STARTING...')}\n"
-            txt += f"\n💎 <b>{charged}</b>  ✅ <b>{approved}</b>  ❌ <b>{declined}</b>  ⚠️ <b>{errors}</b>\n\n"
-            txt += f"⚙️ {sc('SHOPIFY [MASS]')}"
+                txt += f"Status Â· {sc('STARTING...')}\n"
+            txt += f"\nðŸ’Ž <b>{charged}</b>  âœ… <b>{approved}</b>  âŒ <b>{declined}</b>  âš ï¸ <b>{errors}</b>\n\n"
+            txt += f"âš™ï¸ {sc('SHOPIFY [MASS]')}"
 
         return txt
 
@@ -6341,7 +6341,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
     _edit_lock = threading.Lock()  # prevent overlapping edits
 
     def _update_status(force=False):
-        """Throttled status message update (thread-safe) — real-time sync."""
+        """Throttled status message update (thread-safe) â€” real-time sync."""
         now = time.time()
         if not force and now - last_edit[0] < 2.0:
             return
@@ -6363,14 +6363,14 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
     # Auto-skip sites that are incompatible (currency, gateway, delivery errors)
     _bad_sites = set()      # populated during the run
     _bad_sites_lock = threading.Lock()
-    _site_429_count = {}    # {site_url: count} — track repeated 429s
+    _site_429_count = {}    # {site_url: count} â€” track repeated 429s
 
     def _mark_site_bad(site_url):
         with _bad_sites_lock:
             if site_url not in _bad_sites:
                 _bad_sites.add(site_url)
                 if DEBUG:
-                    print(f"[Mass] ⛔ Auto-skipping site: {site_url} (incompatible)")
+                    print(f"[Mass] â›” Auto-skipping site: {site_url} (incompatible)")
 
     def _track_site_error(site_url, result):
         """Track site errors and auto-skip sites that fail repeatedly."""
@@ -6379,7 +6379,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
         if ec == "SITE_INCOMPATIBLE":
             _mark_site_bad(site_url)
             return
-        # Track 429s and throttles — skip site after 3 consecutive failures
+        # Track 429s and throttles â€” skip site after 3 consecutive failures
         if "HTTP 429" in msg or "HTTP 403" in msg or ec == "THROTTLED":
             with _bad_sites_lock:
                 _site_429_count[site_url] = _site_429_count.get(site_url, 0) + 1
@@ -6415,7 +6415,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
             if wait > 0:
                 time.sleep(wait)
             return site
-        # All sites are bad/excluded — fall through to any site
+        # All sites are bad/excluded â€” fall through to any site
         site = _pick_site_rr(sites)
         with _site_throttle_lock:
             now = time.time()
@@ -6504,27 +6504,27 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
                 error_cards.append(f"{card_str} | {msg_text[:60]}")
             checked += 1
 
-        # Hit notifications outside lock — only for Charged (no Approved notifications)
+        # Hit notifications outside lock â€” only for Charged (no Approved notifications)
         if st == "Charged":
             _bg_fire(_discord_charged, message, card_str, site_short, product, price, "mass", status=st, response=response)
             _bg_fire(_send_hit_to_chat, message, "ORDER_PLACED", price, product, response=response)
             with _counter_lock:
-                _hit_count[0] += 1  # batch hit counter — flushed once at end
+                _hit_count[0] += 1  # batch hit counter â€” flushed once at end
             # Instant hit result in user's chat
             def _send_hit_msg(_cid, _card_str, _st, _response, _product, _price, _site_short, _result):
                 try:
-                    hit_out  = f"<b>𝘾𝙃𝘼𝙍𝙂𝙀𝘿</b> 🧾\n\n"
-                    hit_out += f"<b>𝗖𝗖</b> ⇾ <code>{_card_str}</code>\n"
-                    hit_out += f"<b>𝗚𝗮𝘁𝗲𝘄𝗮𝘆</b> ⇾ Shopify Payments\n"
-                    hit_out += f"<b>𝗥𝗲𝘀𝗽𝗼𝗻𝘀𝗲</b> ⇾ Order completed 🛒\n"
-                    hit_out += f"<b>𝗣𝗿𝗶𝗰𝗲</b> ⇾ ${_price} 💸\n"
+                    hit_out  = f"<b>ð˜¾ð™ƒð˜¼ð™ð™‚ð™€ð˜¿</b> ðŸ§¾\n\n"
+                    hit_out += f"<b>ð—–ð—–</b> â‡¾ <code>{_card_str}</code>\n"
+                    hit_out += f"<b>ð—šð—®ð˜ð—²ð˜„ð—®ð˜†</b> â‡¾ Shopify Payments\n"
+                    hit_out += f"<b>ð—¥ð—²ð˜€ð—½ð—¼ð—»ð˜€ð—²</b> â‡¾ Order completed ðŸ›’\n"
+                    hit_out += f"<b>ð—£ð—¿ð—¶ð—°ð—²</b> â‡¾ ${_price} ðŸ’¸\n"
                     cc_num = _card_str.split("|")[0]
                     try:
                         bi = _lookup_bin(cc_num)
                         if bi:
-                            hit_out += f"\n<b>𝗕𝗜𝗡 𝗜𝗻𝗳𝗼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
-                            hit_out += f"<b>𝗕𝗮𝗻𝗸:</b> {_esc(bi['bank'])}\n"
-                            hit_out += f"<b>𝗖𝗼𝘂𝗻𝘁𝗿𝘆:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
+                            hit_out += f"\n<b>ð—•ð—œð—¡ ð—œð—»ð—³ð—¼:</b> {_esc(bi['scheme'])} - {_esc(bi['type'])} - {_esc(bi.get('brand') or bi['type'])}\n"
+                            hit_out += f"<b>ð—•ð—®ð—»ð—¸:</b> {_esc(bi['bank'])}\n"
+                            hit_out += f"<b>ð—–ð—¼ð˜‚ð—»ð˜ð—¿ð˜†:</b> {_esc(bi['country_name'])} {bi['emoji']}\n"
                     except Exception:
                         pass
                     bot.send_message(_cid, hit_out, parse_mode="HTML")
@@ -6532,7 +6532,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
                     pass
             _bg_fire(_send_hit_msg, cid, card_str, st, response, product, price, site_short, result)
 
-        # Real-time sync — update on every card for live feel
+        # Real-time sync â€” update on every card for live feel
         _update_status()
 
     # Run cards concurrently (dynamic workers based on current load)
@@ -6568,7 +6568,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
         with _mass_count_lock:
             _active_mass_checks = max(0, _active_mass_checks - 1)
 
-    # Batch DB writes — single atomic $inc for checks + hits + refund (was 3 calls)
+    # Batch DB writes â€” single atomic $inc for checks + hits + refund (was 3 calls)
     _inc_fields = {"total_checks": len(cards)}
     if _hit_count[0] > 0:
         _inc_fields["total_hits"] = _hit_count[0]
@@ -6579,7 +6579,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
         coll.update_one({"_id": uid}, {"$inc": _inc_fields})
         _invalidate_user_cache(uid)
         if DEBUG and errors > 0:
-            print(f"[Mongo] ✅ Refunded {errors} credits to user {uid} for errored cards")
+            print(f"[Mongo] âœ… Refunded {errors} credits to user {uid} for errored cards")
 
     # Clean stop flag
     _stop_flags.pop(cid, None)
@@ -6590,9 +6590,9 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
     # Final status update
     _final_extras = ""
     if was_stopped:
-        _final_extras += f"\n🛑 <b>{_to_bold_sans('STOPPED')}</b>"
+        _final_extras += f"\nðŸ›‘ <b>{_to_bold_sans('STOPPED')}</b>"
     if errors > 0:
-        _final_extras += f"  ·  💰 {errors} {_to_bold_sans('REFUNDED')}"
+        _final_extras += f"  Â·  ðŸ’° {errors} {_to_bold_sans('REFUNDED')}"
     try:
         bot.edit_message_text(_mass_status_text(final=True) + _final_extras, cid, status_msg.message_id, parse_mode="HTML", reply_markup=_mass_status_kb(final=True))
     except Exception:
@@ -6609,88 +6609,88 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
     f_hit_rate = (f_hits / checked * 100) if checked > 0 else 0
 
     file_lines = []
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    file_lines.append("        ⚡  SHIRO MASS CHECK  ⚡")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+    file_lines.append("        âš¡  SHIRO MASS CHECK  âš¡")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
     file_lines.append("")
-    file_lines.append("  📊  STATISTICS")
-    file_lines.append(f"  ├ Total      ·  {checked}/{total}")
-    file_lines.append(f"  ├ Time       ·  {f_time}")
-    file_lines.append(f"  ├ Speed      ·  {f_speed_str} c/s")
-    file_lines.append(f"  └ Hit Rate   ·  {f_hit_rate:.1f}%")
+    file_lines.append("  ðŸ“Š  STATISTICS")
+    file_lines.append(f"  â”œ Total      Â·  {checked}/{total}")
+    file_lines.append(f"  â”œ Time       Â·  {f_time}")
+    file_lines.append(f"  â”œ Speed      Â·  {f_speed_str} c/s")
+    file_lines.append(f"  â”” Hit Rate   Â·  {f_hit_rate:.1f}%")
     file_lines.append("")
-    file_lines.append("  📋  RESULTS")
-    file_lines.append(f"  ├ 💎 Charged    ·  {charged}")
-    file_lines.append(f"  ├ ✅ Approved   ·  {approved}")
-    file_lines.append(f"  ├ ❌ Declined   ·  {declined}")
-    file_lines.append(f"  └ ⚠️ Errors     ·  {errors}")
+    file_lines.append("  ðŸ“‹  RESULTS")
+    file_lines.append(f"  â”œ ðŸ’Ž Charged    Â·  {charged}")
+    file_lines.append(f"  â”œ âœ… Approved   Â·  {approved}")
+    file_lines.append(f"  â”œ âŒ Declined   Â·  {declined}")
+    file_lines.append(f"  â”” âš ï¸ Errors     Â·  {errors}")
     if errors > 0 and not _is_owner:
-        file_lines.append(f"\n  💰 Refunded    ·  {errors} credit(s)")
+        file_lines.append(f"\n  ðŸ’° Refunded    Â·  {errors} credit(s)")
     file_lines.append("")
     if charged_cards:
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        file_lines.append("           💎  CHARGED")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+        file_lines.append("           ðŸ’Ž  CHARGED")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in charged_cards:
             parts = c.split(" | ")
-            file_lines.append(f"  ├ Card      ·  {parts[0]}")
-            file_lines.append(f"  ├ Response  ·  {parts[1] if len(parts) > 1 else 'N/A'}")
-            file_lines.append(f"  ├ Product   ·  {parts[2] if len(parts) > 2 else 'N/A'}")
-            file_lines.append(f"  ├ Amount    ·  {parts[3] if len(parts) > 3 else 'N/A'}")
-            file_lines.append(f"  └ Site      ·  {parts[4] if len(parts) > 4 else 'N/A'}")
-            file_lines.append("  ───────────────────────────────")
+            file_lines.append(f"  â”œ Card      Â·  {parts[0]}")
+            file_lines.append(f"  â”œ Response  Â·  {parts[1] if len(parts) > 1 else 'N/A'}")
+            file_lines.append(f"  â”œ Product   Â·  {parts[2] if len(parts) > 2 else 'N/A'}")
+            file_lines.append(f"  â”œ Amount    Â·  {parts[3] if len(parts) > 3 else 'N/A'}")
+            file_lines.append(f"  â”” Site      Â·  {parts[4] if len(parts) > 4 else 'N/A'}")
+            file_lines.append("  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€")
         file_lines.append("")
     if approved_cards:
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        file_lines.append("           ✅  APPROVED")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+        file_lines.append("           âœ…  APPROVED")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in approved_cards:
             parts = c.split(" | ")
-            file_lines.append(f"  ├ Card      ·  {parts[0]}")
-            file_lines.append(f"  ├ Response  ·  {parts[1] if len(parts) > 1 else 'N/A'}")
-            file_lines.append(f"  ├ Product   ·  {parts[2] if len(parts) > 2 else 'N/A'}")
-            file_lines.append(f"  ├ Amount    ·  {parts[3] if len(parts) > 3 else 'N/A'}")
-            file_lines.append(f"  └ Site      ·  {parts[4] if len(parts) > 4 else 'N/A'}")
-            file_lines.append("  ───────────────────────────────")
+            file_lines.append(f"  â”œ Card      Â·  {parts[0]}")
+            file_lines.append(f"  â”œ Response  Â·  {parts[1] if len(parts) > 1 else 'N/A'}")
+            file_lines.append(f"  â”œ Product   Â·  {parts[2] if len(parts) > 2 else 'N/A'}")
+            file_lines.append(f"  â”œ Amount    Â·  {parts[3] if len(parts) > 3 else 'N/A'}")
+            file_lines.append(f"  â”” Site      Â·  {parts[4] if len(parts) > 4 else 'N/A'}")
+            file_lines.append("  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€")
         file_lines.append("")
     if declined_cards:
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        file_lines.append("           ❌  DECLINED")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+        file_lines.append("           âŒ  DECLINED")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in declined_cards:
             parts = c.split(" | ")
-            file_lines.append(f"  ├ Card      ·  {parts[0]}")
-            file_lines.append(f"  └ Response  ·  {parts[1] if len(parts) > 1 else 'N/A'}")
-            file_lines.append("  ───────────────────────────────")
+            file_lines.append(f"  â”œ Card      Â·  {parts[0]}")
+            file_lines.append(f"  â”” Response  Â·  {parts[1] if len(parts) > 1 else 'N/A'}")
+            file_lines.append("  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€")
         file_lines.append("")
     if error_cards:
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        file_lines.append("           ⚠️  ERRORS")
-        file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+        file_lines.append("           âš ï¸  ERRORS")
+        file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
         for c in error_cards:
             parts = c.split(" | ")
-            file_lines.append(f"  ├ Card      ·  {parts[0]}")
-            file_lines.append(f"  └ Error     ·  {parts[1] if len(parts) > 1 else 'N/A'}")
-            file_lines.append("  ───────────────────────────────")
+            file_lines.append(f"  â”œ Card      Â·  {parts[0]}")
+            file_lines.append(f"  â”” Error     Â·  {parts[1] if len(parts) > 1 else 'N/A'}")
+            file_lines.append("  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€")
         file_lines.append("")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-    file_lines.append("        Powered by Shiro ⚡")
-    file_lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
+    file_lines.append("        Powered by Shiro âš¡")
+    file_lines.append("â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”")
 
     file_content = "\n".join(file_lines)
     f_buf = io.BytesIO(file_content.encode("utf-8"))
     f_buf.name = f"shiro_mass_{total}cards.txt"
     try:
         sc = _to_bold_sans
-        _cap  = f"⚡ <b>{sc('MASS CHECK RESULTS')}</b>\n"
-        _cap += f"💎 <b>{charged}</b>  ✅ <b>{approved}</b>  ❌ {declined}  ⚠️ {errors}  ·  🎯 {f_hit_rate:.1f}%  ·  ⏱ {f_time}"
+        _cap  = f"âš¡ <b>{sc('MASS CHECK RESULTS')}</b>\n"
+        _cap += f"ðŸ’Ž <b>{charged}</b>  âœ… <b>{approved}</b>  âŒ {declined}  âš ï¸ {errors}  Â·  ðŸŽ¯ {f_hit_rate:.1f}%  Â·  â± {f_time}"
         bot.send_document(cid, f_buf, caption=_cap, parse_mode="HTML")
     except Exception:
         pass
 
 
 def main():
-    # ── Startup Logging ──
+    # â”€â”€ Startup Logging â”€â”€
     log.info('Bot', f'Starting Shiro v2.3.0 (Token: {BOT_TOKEN[:15]}...)')
     
     # Log uvloop status
@@ -6722,8 +6722,8 @@ def main():
     else:
         log.warning('API', 'Stripe Charge API not connected')
     
-    if OWNER_ID:
-        log.info('Admin', f'Owner ID: {OWNER_ID}')
+    if OWNER_IDS:
+        log.info('Admin', f'Owner IDs: {OWNER_IDS}')
     
     # Database connection
     db, coll = _get_mongo()
@@ -6741,7 +6741,7 @@ def main():
     else:
         log.warning('Mongo', 'Not connected - in-memory mode only')
     
-    # ── Graceful shutdown handler ──
+    # â”€â”€ Graceful shutdown handler â”€â”€
     _shutdown_event = threading.Event()
 
     def _graceful_shutdown(signum, frame):
