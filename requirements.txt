@@ -1,0 +1,7 @@
+pyTelegramBotAPI>=4.14.0
+requests>=2.31.0
+httpx[http2]>=0.25.0
+flask>=3.0.0
+pymongo>=4.6.0
+python-dotenv>=1.0.0
+curl_cffi>=0.7.0
