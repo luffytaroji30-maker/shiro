@@ -28,9 +28,16 @@ from shopifyapi import (
     format_proxy, load_proxy_list, check_site_fast,
     run_shopify_check,
 )
-from stripeapi import (
-    try_checkout_card, fetch_checkout_info,
-)
+try:
+    from stripeapi import (
+        try_checkout_card, fetch_checkout_info,
+    )
+    _HAS_STRIPE = True
+except ImportError:
+    _HAS_STRIPE = False
+    def try_checkout_card(*a, **kw): return {"status": "Error", "message": "stripeapi not installed"}
+    def fetch_checkout_info(*a, **kw): return None
+
 try:
     from braintreeapi import run_braintree_check_sync as _bt_check_sync, check_bt_site_fast as _bt_site_fast
     _HAS_BT = True
