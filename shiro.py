@@ -811,7 +811,7 @@ def redeem_credit_code(user_id, code):
                 dur_min = code_doc.get("days", 30) * 24 * 60
             if _set_user_plan(user_id, plan_key, minutes=dur_min):
                 if DEBUG:
-                    print(f"[Mongo] ✅ User {user_id} activated {plan_key} plan for {dur_min} minutes")
+                    print(f"[DB] ✅ User {user_id} activated {plan_key} plan for {dur_min} minutes")
                 return True, f"plan:{plan_key}:{dur_min}", 0
             else:
                 # Roll back code claim
@@ -840,13 +840,13 @@ def redeem_credit_code(user_id, code):
 
         if DEBUG:
             new_balance = get_credits(user_id)
-            print(f"[Mongo] ✅ User {user_id} redeemed code {code} for {credits} credits, new balance: {new_balance}")
+            print(f"[DB] ✅ User {user_id} redeemed code {code} for {credits} credits, new balance: {new_balance}")
 
         return True, f"Redeemed {credits} credits", credits
 
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Redeem error for user {user_id}: {e}")
+            print(f"[DB] ❌ Redeem error for user {user_id}: {e}")
         return False, "Database error", 0
 
 
@@ -1008,7 +1008,7 @@ def register_user(user_id, username=None, first_name=None):
     coll = _users_coll()
     if coll is None:
         if DEBUG:
-            print(f"[Mongo] Cannot register user {user_id}: DB not connected")
+            print(f"[DB] Cannot register user {user_id}: DB not connected")
         return False
     try:
         now_iso = datetime.now(timezone.utc).isoformat()
@@ -1035,13 +1035,13 @@ def register_user(user_id, username=None, first_name=None):
             _invalidate_user_cache(user_id)
         if DEBUG:
             if newly_created:
-                print(f"[Mongo] ✅ Registered user {user_id} ({username or first_name or '?'}) with {INITIAL_CREDITS} credits")
+                print(f"[DB] ✅ Registered user {user_id} ({username or first_name or '?'}) with {INITIAL_CREDITS} credits")
             else:
-                print(f"[Mongo] User {user_id} already registered")
+                print(f"[DB] User {user_id} already registered")
         return newly_created
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Register error for {user_id}: {e}")
+            print(f"[DB] ❌ Register error for {user_id}: {e}")
             import traceback
             traceback.print_exc()
         return False
@@ -1086,7 +1086,7 @@ def deduct_credits(user_id, amount):
     coll = _users_coll()
     if coll is None:
         if DEBUG:
-            print(f"[Mongo] Cannot deduct credits for {user_id}: DB not connected")
+            print(f"[DB] Cannot deduct credits for {user_id}: DB not connected")
         return False
     try:
         r = coll.find_one_and_update(
@@ -1098,11 +1098,11 @@ def deduct_credits(user_id, amount):
             _invalidate_user_cache(user_id)
             if DEBUG:
                 new_balance = r.get("credits", 0)
-                print(f"[Mongo] ✅ Deducted {amount} credits from user {user_id}, new balance: {new_balance}")
+                print(f"[DB] ✅ Deducted {amount} credits from user {user_id}, new balance: {new_balance}")
         return r is not None
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Deduct error for {user_id}: {e}")
+            print(f"[DB] ❌ Deduct error for {user_id}: {e}")
         return False
 
 
@@ -1160,7 +1160,7 @@ def increment_total_checks(user_id, count=1):
     coll = _users_coll()
     if coll is None:
         if DEBUG:
-            print(f"[Mongo] Cannot increment checks for {user_id}: DB not connected")
+            print(f"[DB] Cannot increment checks for {user_id}: DB not connected")
         return False
     try:
         coll.update_one(
@@ -1170,11 +1170,11 @@ def increment_total_checks(user_id, count=1):
         )
         _invalidate_user_cache(user_id)
         if DEBUG:
-            print(f"[Mongo] ✅ Incremented checks for user {user_id} by {count}")
+            print(f"[DB] ✅ Incremented checks for user {user_id} by {count}")
         return True
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Increment error for {user_id}: {e}")
+            print(f"[DB] ❌ Increment error for {user_id}: {e}")
         return False
 
 
@@ -1191,11 +1191,11 @@ def increment_total_hits(user_id, count=1):
         )
         _invalidate_user_cache(user_id)
         if DEBUG:
-            print(f"[Mongo] ✅ Incremented hits for user {user_id} by {count}")
+            print(f"[DB] ✅ Incremented hits for user {user_id} by {count}")
         return True
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Hits increment error for {user_id}: {e}")
+            print(f"[DB] ❌ Hits increment error for {user_id}: {e}")
         return False
 
 def _load_chat_from_mongo(chat_id):
@@ -1214,14 +1214,14 @@ def _load_chat_from_mongo(chat_id):
                 bt_user_sites[chat_id] = doc["bt_sites"]
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] Load error for {chat_id}: {e}")
+            print(f"[DB] Load error for {chat_id}: {e}")
 
 def _save_chat_to_mongo(chat_id):
     """Write current in-memory sites and proxies for chat_id to MongoDB."""
     db, coll = _get_mongo()
     if coll is None:
         if DEBUG:
-            print(f"[Mongo] Cannot save chat {chat_id}: DB not connected")
+            print(f"[DB] Cannot save chat {chat_id}: DB not connected")
         return
     try:
         result = coll.update_one(
@@ -1232,10 +1232,10 @@ def _save_chat_to_mongo(chat_id):
         if DEBUG:
             sites_count = len(user_sites.get(chat_id, []))
             proxies_count = len(user_proxies.get(chat_id, []))
-            print(f"[Mongo] ✅ Saved chat {chat_id}: {sites_count} sites, {proxies_count} proxies")
+            print(f"[DB] ✅ Saved chat {chat_id}: {sites_count} sites, {proxies_count} proxies")
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] ❌ Save error for {chat_id}: {e}")
+            print(f"[DB] ❌ Save error for {chat_id}: {e}")
 
 def _load_all_chats_from_mongo():
     """On startup: load all chats from MongoDB into user_sites / user_proxies."""
@@ -1255,7 +1255,7 @@ def _load_all_chats_from_mongo():
                 bt_user_sites[cid] = doc["bt_sites"]
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] Load all error: {e}")
+            print(f"[DB] Load all error: {e}")
 
 
 def reset_db():
@@ -1269,7 +1269,7 @@ def reset_db():
             deleted = result.deleted_count or 0
         except Exception as e:
             if DEBUG:
-                print(f"[Mongo] reset_db error: {e}")
+                print(f"[DB] reset_db error: {e}")
             deleted = -1
     user_sites.clear()
     user_proxies.clear()
@@ -1285,7 +1285,7 @@ def clear_db():
             coll.update_many({}, {"$set": {"sites": [], "proxies": []}})
         except Exception as e:
             if DEBUG:
-                print(f"[Mongo] clear_db error: {e}")
+                print(f"[DB] clear_db error: {e}")
     # Always clear in-memory so bot state matches DB
     user_sites.clear()
     user_proxies.clear()
@@ -2363,6 +2363,8 @@ def _send_hit_to_chat(message, status_label, price="", product="", response="", 
 
 # API endpoint for Shopify checks
 SHIRO_API_URL = os.environ.get("SHIRO_API_URL", "http://localhost:5000")
+if SHIRO_API_URL and not SHIRO_API_URL.startswith(("http://", "https://")):
+    SHIRO_API_URL = "https://" + SHIRO_API_URL
 
 def run_check_sync(site_url, card_str, proxy_url=None, timeout=90.0, max_captcha_retries=1):
     """Run one check via the Shiro API. timeout in seconds."""
@@ -3550,7 +3552,7 @@ def cmd_addcredits(message):
             _invalidate_user_cache(target_user_id)
             new_balance = coll.find_one({"_id": target_user_id})["credits"]
             if DEBUG:
-                print(f"[Mongo] ✅ Added {amount} credits to user {target_user_id}, new balance: {new_balance}")
+                print(f"[DB] ✅ Added {amount} credits to user {target_user_id}, new balance: {new_balance}")
             bot.reply_to(
                 message,
                 f"✅ Added {amount} credits to user {target_user_id}\n"
@@ -6788,7 +6790,7 @@ def _run_mass_check_inner(message, cid, uid, cards, sites, proxies, _is_owner):
         coll.update_one({"_id": uid}, {"$inc": _inc_fields})
         _invalidate_user_cache(uid)
         if DEBUG and errors > 0:
-            print(f"[Mongo] ✅ Refunded {errors} credits to user {uid} for errored cards")
+            print(f"[DB] ✅ Refunded {errors} credits to user {uid} for errored cards")
 
     # Clean stop flag
     _stop_flags.pop(cid, None)
