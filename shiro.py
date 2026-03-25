@@ -1,7 +1,7 @@
 # Shiro Telegram Bot - Shopify checker using gg.py
 # Commands: /sh, /msh, /ac, /setsite, /setproxies
 # Bot name: Shiro
-# Sites and proxies persisted in MongoDB
+# Sites and proxies persisted in JSON files (/data volume)
 
 import asyncio
 import html as _html
@@ -74,7 +74,7 @@ def _start_shared_loop(loop):
 _loop_thread = threading.Thread(target=_start_shared_loop, args=(_shared_loop,), daemon=True)
 _loop_thread.start()
 
-# Load .env so SHIRO_MONGO_URI, BOT_TOKEN, DEBUG can be set there
+# Load .env so BOT_TOKEN, DEBUG can be set there
 try:
     from dotenv import load_dotenv
     load_dotenv()
@@ -393,14 +393,9 @@ if DISCORD_WEBHOOK_CONSOLE:
     sys.stdout = _stdout_mirror
     sys.stderr = _stderr_mirror
 
-# MongoDB – from .env or SHIRO_MONGO_URI env var
-MONGO_URI = os.environ.get("SHIRO_MONGO_URI")
-if not MONGO_URI:
-    log.warning('Config', 'SHIRO_MONGO_URI not set - MongoDB features disabled')
-
-MONGO_DB_NAME = "shiro"
-MONGO_COLLECTION = "chats"
-MONGO_USERS_COLLECTION = "users"
+# ── JSON File Storage (Railway volume at /data) ────────────────────────────
+_DATA_DIR = os.environ.get("SHIRO_DATA_DIR", "/data")
+os.makedirs(_DATA_DIR, exist_ok=True)
 
 INITIAL_CREDITS = 100
 CREDITS_PER_CHECK = 1
@@ -434,72 +429,324 @@ def _parse_duration(text):
             total_min += v
     return total_min
 
-_mongo_client = None
-_mongo_db = None
-_mongo_coll = None
-_mongo_users_coll = None
+class _UpdateResult:
+    __slots__ = ('matched_count', 'modified_count', 'upserted_id')
+    def __init__(self, matched=0, modified=0, upserted_id=None):
+        self.matched_count = matched
+        self.modified_count = modified
+        self.upserted_id = upserted_id
 
-_mongo_init_lock = threading.Lock()
+class _DeleteResult:
+    __slots__ = ('deleted_count',)
+    def __init__(self, deleted=0):
+        self.deleted_count = deleted
 
-def _get_mongo():
-    """Lazy init MongoDB connection. Returns (db, collection) or (None, None) on failure."""
-    global _mongo_client, _mongo_db, _mongo_coll, _mongo_users_coll
-    if _mongo_coll is not None:
-        return _mongo_db, _mongo_coll
-    
-    with _mongo_init_lock:
-        # Double-check after acquiring lock
-        if _mongo_coll is not None:
-            return _mongo_db, _mongo_coll
-        
-        # Check if MONGO_URI is set
-        if not MONGO_URI:
-            return None, None
-        
+class _Cursor:
+    """Chainable query result supporting .sort().limit() patterns."""
+    def __init__(self, docs):
+        self._docs = list(docs)
+    def sort(self, key, direction=-1):
+        self._docs.sort(key=lambda d: (d.get(key) is None, d.get(key) or ''), reverse=(direction == -1))
+        return self
+    def limit(self, n):
+        self._docs = self._docs[:n]
+        return self
+    def __iter__(self):
+        return iter(self._docs)
+    def __len__(self):
+        return len(self._docs)
+
+class _JsonCollection:
+    """Thread-safe JSON-file collection with MongoDB-compatible read/write API."""
+
+    def __init__(self, name):
+        self._name = name
+        self._path = os.path.join(_DATA_DIR, f"{name}.json")
+        self._lock = threading.Lock()
+        self._data = {}
+        self._load()
+
+    # -- persistence --
+    def _load(self):
         try:
-            from pymongo import MongoClient
-            _mongo_client = MongoClient(
-                MONGO_URI,
-                serverSelectionTimeoutMS=5000,
-                maxPoolSize=20,
-                minPoolSize=2,
-                maxIdleTimeMS=60000,
-                connectTimeoutMS=5000,
-                socketTimeoutMS=10000,
-                retryWrites=True,
-                retryReads=True,
-            )
-            _mongo_client.admin.command("ping")
-            _mongo_db = _mongo_client[MONGO_DB_NAME]
-            _mongo_coll = _mongo_db[MONGO_COLLECTION]
-            _mongo_users_coll = _mongo_db[MONGO_USERS_COLLECTION]
-            return _mongo_db, _mongo_coll
+            if os.path.exists(self._path):
+                with open(self._path, 'r', encoding='utf-8') as f:
+                    self._data = _json_mod.load(f)
+        except Exception:
+            self._data = {}
+
+    def _save(self):
+        try:
+            tmp = self._path + '.tmp'
+            with open(tmp, 'w', encoding='utf-8') as f:
+                _json_mod.dump(self._data, f, ensure_ascii=False, default=str)
+            os.replace(tmp, self._path)
         except Exception as e:
             if DEBUG:
-                print(f"[Mongo] Connection failed: {e}")
-            return None, None
+                print(f"[Store] Save error for {self._name}: {e}")
 
+    # -- query matching --
+    def _matches(self, doc, query):
+        for key, val in query.items():
+            if key == '$expr':
+                if not self._eval_expr(doc, val):
+                    return False
+                continue
+            dv = doc.get(key)
+            if isinstance(val, dict):
+                for op, operand in val.items():
+                    if op == '$gte' and (dv is None or dv < operand):
+                        return False
+                    elif op == '$gt' and (dv is None or dv <= operand):
+                        return False
+                    elif op == '$lt' and (dv is None or dv >= operand):
+                        return False
+                    elif op == '$ne':
+                        if isinstance(dv, list):
+                            if operand in dv:
+                                return False
+                        elif dv == operand:
+                            return False
+                    elif op == '$exists':
+                        exists = key in doc and doc[key] is not None
+                        if operand and not exists:
+                            return False
+                        if not operand and exists:
+                            return False
+                    elif op == '$type':
+                        types = operand if isinstance(operand, list) else [operand]
+                        if not any(self._type_ok(dv, t) for t in types):
+                            return False
+                    elif op == '$not':
+                        if isinstance(operand, dict) and '$type' in operand:
+                            types = operand['$type']
+                            if not isinstance(types, list):
+                                types = [types]
+                            if any(self._type_ok(dv, t) for t in types):
+                                return False
+            else:
+                if dv != val:
+                    return False
+        return True
+
+    @staticmethod
+    def _type_ok(val, type_str):
+        if type_str in ('int', 'long'):
+            return isinstance(val, int) and not isinstance(val, bool)
+        if type_str == 'string':
+            return isinstance(val, str)
+        return False
+
+    def _eval_expr(self, doc, expr):
+        if '$lt' in expr:
+            a, b = expr['$lt']
+            av = doc.get(a[1:], 0) if isinstance(a, str) and a.startswith('$') else a
+            bv = doc.get(b[1:], 0) if isinstance(b, str) and b.startswith('$') else b
+            return (av or 0) < (bv or 0)
+        return True
+
+    # -- update application --
+    def _apply_update(self, doc, update, is_insert=False):
+        for op, fields in update.items():
+            if op == '$set':
+                doc.update(fields)
+            elif op == '$inc':
+                for k, v in fields.items():
+                    doc[k] = doc.get(k, 0) + v
+            elif op == '$setOnInsert':
+                if is_insert:
+                    for k, v in fields.items():
+                        if k not in doc:
+                            doc[k] = v
+            elif op == '$push':
+                for k, v in fields.items():
+                    if k not in doc or not isinstance(doc[k], list):
+                        doc[k] = []
+                    doc[k].append(v)
+            elif op == '$pull':
+                for k, v in fields.items():
+                    if k in doc and isinstance(doc[k], list):
+                        doc[k] = [x for x in doc[k] if x != v]
+
+    def _find_doc(self, query):
+        """Return (doc_ref, key) or (None, None). Caller must hold self._lock."""
+        _id = query.get('_id')
+        if _id is not None and not isinstance(_id, dict):
+            key = str(_id)
+            doc = self._data.get(key)
+            if doc is not None:
+                rest = {k: v for k, v in query.items() if k != '_id'}
+                if rest and not self._matches(doc, rest):
+                    return None, None
+                return doc, key
+            return None, None
+        for k, d in self._data.items():
+            if self._matches(d, query):
+                return d, k
+        return None, None
+
+    # -- CRUD --
+    def find_one(self, query=None):
+        with self._lock:
+            if not query:
+                for d in self._data.values():
+                    return dict(d)
+                return None
+            doc, _ = self._find_doc(query)
+            return dict(doc) if doc else None
+
+    def update_one(self, query, update, upsert=False, **kw):
+        with self._lock:
+            doc, key = self._find_doc(query)
+            if doc is not None:
+                self._apply_update(doc, update)
+                self._save()
+                return _UpdateResult(matched=1, modified=1)
+            if upsert:
+                _id = query.get('_id')
+                if _id is None or isinstance(_id, dict):
+                    _id = str(uuid.uuid4())
+                key = str(_id)
+                doc = {'_id': _id}
+                self._apply_update(doc, update, is_insert=True)
+                self._data[key] = doc
+                self._save()
+                return _UpdateResult(upserted_id=_id)
+            return _UpdateResult()
+
+    def find_one_and_update(self, query, update, return_document=None, **kw):
+        with self._lock:
+            doc, _ = self._find_doc(query)
+            if doc is None:
+                return None
+            if return_document:
+                self._apply_update(doc, update)
+                self._save()
+                return dict(doc)
+            else:
+                before = dict(doc)
+                self._apply_update(doc, update)
+                self._save()
+                return before
+
+    def insert_one(self, doc):
+        with self._lock:
+            _id = doc.get('_id')
+            if _id is None:
+                _id = str(uuid.uuid4())
+                doc['_id'] = _id
+            self._data[str(_id)] = dict(doc)
+            # cap append-heavy collections at 10 000 docs
+            if len(self._data) > 10000:
+                keys = list(self._data.keys())
+                for k in keys[:len(keys) - 10000]:
+                    del self._data[k]
+            self._save()
+
+    def find(self, query=None, **kw):
+        with self._lock:
+            if not query:
+                return _Cursor(dict(d) for d in self._data.values())
+            return _Cursor(dict(d) for d in self._data.values() if self._matches(d, query))
+
+    def delete_one(self, query):
+        with self._lock:
+            _, key = self._find_doc(query)
+            if key is not None:
+                del self._data[key]
+                self._save()
+                return _DeleteResult(1)
+            return _DeleteResult(0)
+
+    def delete_many(self, query=None):
+        with self._lock:
+            if not query:
+                n = len(self._data)
+                self._data.clear()
+                self._save()
+                return _DeleteResult(n)
+            to_del = [k for k, d in self._data.items() if self._matches(d, query)]
+            for k in to_del:
+                del self._data[k]
+            if to_del:
+                self._save()
+            return _DeleteResult(len(to_del))
+
+    def update_many(self, query, update):
+        with self._lock:
+            n = 0
+            for d in self._data.values():
+                if self._matches(d, query):
+                    self._apply_update(d, update)
+                    n += 1
+            if n:
+                self._save()
+            return _UpdateResult(matched=n, modified=n)
+
+    def count_documents(self, query=None):
+        with self._lock:
+            if not query:
+                return len(self._data)
+            return sum(1 for d in self._data.values() if self._matches(d, query))
+
+    def aggregate(self, pipeline):
+        with self._lock:
+            docs = list(self._data.values())
+            for stage in pipeline:
+                if '$match' in stage:
+                    docs = [d for d in docs if self._matches(d, stage['$match'])]
+                elif '$group' in stage:
+                    grp = stage['$group']
+                    result = {'_id': grp.get('_id')}
+                    for k, v in grp.items():
+                        if k == '_id':
+                            continue
+                        if isinstance(v, dict) and '$sum' in v:
+                            field = v['$sum']
+                            if isinstance(field, str) and field.startswith('$'):
+                                result[k] = sum(d.get(field[1:], 0) for d in docs)
+                            else:
+                                result[k] = field * len(docs)
+                    docs = [result]
+                elif '$sort' in stage:
+                    sk, sd = next(iter(stage['$sort'].items()))
+                    docs.sort(key=lambda d: d.get(sk, 0) or 0, reverse=(sd == -1))
+                elif '$limit' in stage:
+                    docs = docs[:stage['$limit']]
+            return docs
+
+
+class _JsonDb:
+    """Database-like wrapper that returns named JSON collections."""
+    def __init__(self):
+        self._colls = {}
+    def __getitem__(self, name):
+        if name not in self._colls:
+            self._colls[name] = _JsonCollection(name)
+        return self._colls[name]
+    def list_collection_names(self):
+        import glob as _g
+        return [os.path.splitext(os.path.basename(f))[0]
+                for f in _g.glob(os.path.join(_DATA_DIR, '*.json'))]
+    def __bool__(self):
+        return True
+    def get_collection(self, name, **kw):
+        return self[name]
+
+_json_db = _JsonDb()
+
+
+def _get_mongo():
+    """Return (db, chats_collection). Always available with JSON file storage."""
+    return _json_db, _json_db["chats"]
 
 def _users_coll():
-    """Return cached users collection (avoids re-creating Collection wrapper)."""
-    if _mongo_users_coll is not None:
-        return _mongo_users_coll
-    _get_mongo()  # ensure connection is initialised
-    return _mongo_users_coll
-
-
-_mongo_codes_coll = None
+    """Return users collection."""
+    return _json_db["users"]
 
 def _codes_coll():
-    """Get credit codes collection (cached)."""
-    global _mongo_codes_coll
-    if _mongo_codes_coll is not None:
-        return _mongo_codes_coll
-    db, _ = _get_mongo()
-    if db is None:
-        return None
-    _mongo_codes_coll = db["credit_codes"]
-    return _mongo_codes_coll
+    """Return credit codes collection."""
+    return _json_db["credit_codes"]
 
 
 def generate_credit_code(credits, max_uses=1):
@@ -694,10 +941,10 @@ def _save_cached_image_file_id(file_id):
             upsert=True
         )
         if DEBUG:
-            print(f"[Cache] Saved image file_id to MongoDB")
+            print(f"[Cache] Saved image file_id to disk")
     except Exception as e:
         if DEBUG:
-            print(f"[Cache] Failed to save to MongoDB: {e}")
+            print(f"[Cache] Failed to save to disk: {e}")
 
 
 def _load_cached_image_file_id():
@@ -712,7 +959,7 @@ def _load_cached_image_file_id():
             return doc["file_id"]
     except Exception as e:
         if DEBUG:
-            print(f"[Cache] Failed to load from MongoDB: {e}")
+            print(f"[Cache] Failed to load from disk: {e}")
     return None
 
 
@@ -727,7 +974,7 @@ def _clear_cached_image():
         cache_coll = db["bot_cache"]
         cache_coll.delete_one({"_id": "start_image"})
         if DEBUG:
-            print(f"[Cache] Cleared image cache from MongoDB")
+            print(f"[Cache] Cleared image cache from disk")
     except Exception as e:
         if DEBUG:
             print(f"[Cache] Failed to clear cache: {e}")
@@ -1046,123 +1293,77 @@ def clear_db():
 
 def sync_database():
     """
-    Sync data from old database to current structure.
-    This ensures all existing user data (credits, registration dates, checks) is preserved
-    and merged with any new data structure we've added.
-    Also cleans up invalid user IDs (non-numeric Telegram IDs).
+    Sync data on startup: ensure all user and chat docs have required fields.
+    Loads all chat data into memory.
     """
     db, coll = _get_mongo()
-    if db is None:
-        return {"success": False, "error": "Database not connected"}
-    
+
     try:
-        users_coll = db[MONGO_USERS_COLLECTION]
-        chats_coll = db[MONGO_COLLECTION]
-        
-        # Sync users collection - ensure all users have required fields
+        users_c = _users_coll()
+        chats_c = db["chats"]
+
         users_synced = 0
         invalid_users = 0
-        
-        for user_doc in users_coll.find({}):
+
+        for user_doc in users_c.find({}):
             user_id = user_doc.get("_id")
             if user_id is None:
                 continue
-            
-            # Check if user_id is a valid Telegram ID (must be an integer)
-            # Old database might have MongoDB ObjectId strings
             if not isinstance(user_id, int):
-                # Try to convert string to int
-                try:
-                    user_id_int = int(user_id)
-                    # If successful, this was stored as string, skip it as invalid
-                    invalid_users += 1
-                    continue
-                except (ValueError, TypeError):
-                    # Not a valid Telegram user ID, mark for cleanup
-                    invalid_users += 1
-                    continue
-            
-            # Ensure all required fields exist
+                invalid_users += 1
+                continue
+
             update_fields = {}
-            
-            # Add credits if missing
             if "credits" not in user_doc:
                 update_fields["credits"] = INITIAL_CREDITS
-            
-            # Add registered_at if missing
             if "registered_at" not in user_doc:
                 update_fields["registered_at"] = datetime.now(timezone.utc).isoformat()
-            
-            # Add total_checks if missing
             if "total_checks" not in user_doc:
                 update_fields["total_checks"] = 0
-            
-            # Add total_hits if missing
             if "total_hits" not in user_doc:
                 update_fields["total_hits"] = 0
-            
-            # Add plan fields if missing
             if "plan" not in user_doc:
                 update_fields["plan"] = None
             if "plan_expires" not in user_doc:
                 update_fields["plan_expires"] = None
-            
-            # Update if needed
+
             if update_fields:
-                users_coll.update_one(
-                    {"_id": user_id},
-                    {"$set": update_fields}
-                )
+                users_c.update_one({"_id": user_id}, {"$set": update_fields})
                 users_synced += 1
-        
-        # Sync chats collection - ensure all chats have sites and proxies arrays
+
         chats_synced = 0
-        for chat_doc in chats_coll.find({}):
+        for chat_doc in chats_c.find({}):
             chat_id = chat_doc.get("_id")
             if chat_id is None:
                 continue
-            
             update_fields = {}
-            
-            # Ensure sites array exists
             if "sites" not in chat_doc:
                 update_fields["sites"] = []
-            
-            # Ensure proxies array exists
             if "proxies" not in chat_doc:
                 update_fields["proxies"] = []
-            
-            # Update if needed
             if update_fields:
-                chats_coll.update_one(
-                    {"_id": chat_id},
-                    {"$set": update_fields}
-                )
+                chats_c.update_one({"_id": chat_id}, {"$set": update_fields})
                 chats_synced += 1
-        
-        # Reload all data into memory
+
         _load_all_chats_from_mongo()
-        
-        # Count valid users (integer IDs only)
-        valid_users = users_coll.count_documents({"_id": {"$type": ["int", "long"]}})
-        
+
+        valid_users = sum(1 for d in users_c.find({}) if isinstance(d.get("_id"), int))
+
         result = {
             "success": True,
             "users_synced": users_synced,
             "chats_synced": chats_synced,
             "total_users": valid_users,
-            "total_chats": chats_coll.count_documents({}),
-            "invalid_users": invalid_users
+            "total_chats": chats_c.count_documents({}),
+            "invalid_users": invalid_users,
         }
-        
         if invalid_users > 0:
-            result["warning"] = f"{invalid_users} invalid user IDs found (not Telegram IDs)"
-        
+            result["warning"] = f"{invalid_users} invalid user IDs found"
         return result
-    
+
     except Exception as e:
         if DEBUG:
-            print(f"[Mongo] sync_database error: {e}")
+            print(f"[Store] sync_database error: {e}")
         return {"success": False, "error": str(e)}
 
 
@@ -3207,7 +3408,7 @@ def cmd_mongocheck(message):
         return
 
     sc = _to_bold_sans
-    lines = [f"🔍 <b>{sc('MONGODB HEALTH CHECK')}</b>\n"]
+    lines = [f"🔍 <b>{sc('STORAGE HEALTH CHECK')}</b>\n"]
 
     # 1) Connection test
     db, chats_coll = _get_mongo()
@@ -3215,7 +3416,7 @@ def cmd_mongocheck(message):
     codes_col = _codes_coll()
 
     if db is None:
-        bot.reply_to(message, "❌ <b>MongoDB NOT connected.</b>\nCheck SHIRO_MONGO_URI in .env", parse_mode="HTML")
+        bot.reply_to(message, "❌ <b>Storage NOT connected.</b>\nCheck data directory.", parse_mode="HTML")
         return
 
     lines.append(f"✅ <b>{sc('CONNECTION:')}</b> {sc('OK')}\n")
@@ -3285,8 +3486,7 @@ def cmd_mongocheck(message):
 
     # 7) Write test
     try:
-        from pymongo import WriteConcern
-        test_coll = db.get_collection("_health_check", write_concern=WriteConcern(w=1))
+        test_coll = db["_health_check"]
         test_coll.update_one({"_id": "ping"}, {"$set": {"ts": datetime.now(timezone.utc).isoformat()}}, upsert=True)
         test_coll.delete_one({"_id": "ping"})
         lines.append(f"\n✅ <b>{sc('WRITE TEST:')}</b> {sc('OK')}")
@@ -4557,7 +4757,16 @@ def cmd_history(message):
         gw = r.get("gateway", "?")
         msg_text = (r.get("message") or "")[:40]
         ts = r.get("timestamp")
-        time_str = ts.strftime("%m/%d %H:%M") if ts else "?"
+        if isinstance(ts, str):
+            try:
+                ts = datetime.fromisoformat(ts)
+                time_str = ts.strftime("%m/%d %H:%M")
+            except (ValueError, TypeError):
+                time_str = ts[:16] if ts else "?"
+        elif ts:
+            time_str = ts.strftime("%m/%d %H:%M")
+        else:
+            time_str = "?"
         lines.append(f"{emoji} <code>****{card}</code> | {gw} | {_esc(msg_text)} | {time_str}")
     bot.reply_to(message, "\n".join(lines), parse_mode="HTML")
 
@@ -6725,21 +6934,19 @@ def main():
     if OWNER_IDS:
         log.info('Admin', f'Owner IDs: {OWNER_IDS}')
     
-    # Database connection
+    # Database (JSON file storage on /data volume)
+    log.info('Storage', f'Data directory: {_DATA_DIR}')
     db, coll = _get_mongo()
-    if coll is not None:
-        log.info('Mongo', 'Syncing database...')
-        sync_result = sync_database()
-        if sync_result["success"]:
-            log.success('Mongo', f'Connected - {sync_result["total_users"]} users, {sync_result["total_chats"]} chats')
-            if sync_result['users_synced'] > 0 or sync_result['chats_synced'] > 0:
-                log.info('Mongo', f'Updated: {sync_result["users_synced"]} users, {sync_result["chats_synced"]} chats')
-            if sync_result.get('invalid_users', 0) > 0:
-                log.warning('Mongo', f'Skipped {sync_result["invalid_users"]} invalid user IDs')
-        else:
-            log.warning('Mongo', f'Sync warning: {sync_result.get("error", "Unknown")}')
+    log.info('Storage', 'Syncing database...')
+    sync_result = sync_database()
+    if sync_result["success"]:
+        log.success('Storage', f'Ready - {sync_result["total_users"]} users, {sync_result["total_chats"]} chats')
+        if sync_result['users_synced'] > 0 or sync_result['chats_synced'] > 0:
+            log.info('Storage', f'Updated: {sync_result["users_synced"]} users, {sync_result["chats_synced"]} chats')
+        if sync_result.get('invalid_users', 0) > 0:
+            log.warning('Storage', f'Skipped {sync_result["invalid_users"]} invalid user IDs')
     else:
-        log.warning('Mongo', 'Not connected - in-memory mode only')
+        log.warning('Storage', f'Sync warning: {sync_result.get("error", "Unknown")}')
     
     # ── Graceful shutdown handler ──
     _shutdown_event = threading.Event()
